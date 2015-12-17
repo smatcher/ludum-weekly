@@ -1,5 +1,5 @@
 Ludum Weekly
 ============
 
-An attempt to make a new game every week:w
+An attempt to make a new game every week
 

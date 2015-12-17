@@ -46,7 +46,7 @@ function love.draw()
 	-- Draw score
 	-- TODO --
 
-	-- Draw stryker --
+	-- Draw streaker --
 	-- TODO --
 
 	UI.draw()
