@@ -1,0 +1,3 @@
+[submodule "001-pong-streaker/love-toys"]
+	path = 001-pong-streaker/love-toys
+	url = https://github.com/smatcher/love-toys.git
