@@ -20,7 +20,7 @@ separation_margin = 40
 separation_x = love.window.getWidth() / 2
 
 function love.load()
-	UI = require "love-toys.third-party.loveframes"
+	UI = require "love-toys.third-party.LoveFrames"
 end
 
 function love.update(dt)
