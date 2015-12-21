@@ -12,6 +12,8 @@ paddle_2_y = paddle_start_y
 ball_width = 10
 ball_x = love.window.getWidth() / 2
 ball_y = love.window.getHeight() / 2
+ball_speed_x = 100
+ball_speed_y = 20
 
 separation_width = 2
 separation_spacing = 4
@@ -45,17 +47,95 @@ score_font = {
 
 function love.load()
 	UI = require "love-toys.third-party.LoveFrames"
+
+	resetBall(1)
+end
+
+function resetBall(serving_player)
+	ball_x = love.window.getWidth() / 2
+	ball_y = love.window.getHeight() / 2
+
+	if serving_player == 1 then
+		ball_speed_x = 100
+	else
+		ball_speed_x = -100
+	end
+
+	-- TODO : add some randomness
+	ball_speed_y = 20
 end
 
 global_timer = 0
 function love.update(dt)
 	UI.update(dt)
-	local prev = global_timer
-	global_timer = global_timer + dt
-	if math.floor(prev) ~= math.floor(global_timer) then
-		p1_score = p1_score + 1
-		p2_score = p2_score + 2
+
+	local new_ball_x = ball_x + ball_speed_x * dt
+	local new_ball_y = ball_y + ball_speed_y * dt
+	local new_ball_speed_x = ball_speed_x
+	local new_ball_speed_y = ball_speed_y
+	local reset_ball = false
+	local serving_player = 1
+
+	-- hit left wall
+	if new_ball_x < 0 then
+		p2_score = (p2_score + 1) % 100
+		serving_player = 2
+		reset_ball = true
 	end
+
+	-- hit right wall
+	if new_ball_x > love.window.getWidth() then
+		p1_score = (p1_score + 1) % 100
+		serving_player = 1
+		reset_ball = true
+	end
+
+	-- hit p1 paddle
+	if new_ball_x - ball_width/2 < paddle_1_x + paddle_width/2 and
+	   ball_x - ball_width/2 > paddle_1_x + paddle_width/2 and
+	   new_ball_y > paddle_1_y - paddle_height/2 and
+	   new_ball_y < paddle_1_y + paddle_height/2 then
+		new_ball_x = ball_x
+		new_ball_speed_x = -ball_speed_x
+		-- TODO : increase speed (add some spin effect)
+	end
+
+	-- hit p2 paddle
+	if new_ball_x + ball_width/2 > paddle_2_x - paddle_width/2 and
+	   ball_x + ball_width/2 < paddle_2_x - paddle_width/2 and
+	   new_ball_y > paddle_2_y - paddle_height/2 and
+	   new_ball_y < paddle_2_y + paddle_height/2 then
+		new_ball_x = ball_x
+		new_ball_speed_x = -ball_speed_x
+		-- TODO : increase speed (add some spin effect)
+	end
+
+	-- hit screen top
+	if new_ball_y < 0 then
+		new_ball_y = ball_y
+		new_ball_speed_y = -ball_speed_y
+	end
+
+	-- hit screen bottom
+	if new_ball_y > love.window.getHeight() then
+		new_ball_y = ball_y
+		new_ball_speed_y = -ball_speed_y
+	end
+
+	-- apply new ball coord
+	if reset_ball then
+		resetBall(serving_player)
+	else
+		ball_x = new_ball_x
+		ball_y = new_ball_y
+		ball_speed_x = new_ball_speed_x
+		ball_speed_y = new_ball_speed_y
+	end
+
+	-- paddles track the ball
+	-- TODO : add some speed clamping, some prediction and some delay to make it more life-like
+	paddle_1_y = ball_y
+	paddle_2_y = ball_y
 end
 
 function drawDigit(x, y, digit)
