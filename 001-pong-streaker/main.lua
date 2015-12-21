@@ -27,6 +27,27 @@ score_width  = 30
 score_thickness = 4
 score_spacing = 10
 
+streaker_speed = 100
+streaker_x = love.window.getWidth() / 2
+streaker_y = love.window.getHeight() - separation_margin
+streaker_width = 30
+
+streaker_map_1 = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+streaker_map_2 = {6, 3, 8, 1, 7, 4, 2, 9, 5}
+streaker_blend = 0
+streaker_colors = {
+	{255, 128, 128, 255},
+	{200, 140, 128, 255},
+	{255, 160, 140, 255},
+	{255, 080, 140, 255},
+	{200, 120, 128, 255},
+	{200, 140, 100, 255},
+	{230, 080, 080, 255},
+	{200, 100, 100, 255},
+	{255, 140, 080, 255},
+	{200, 160, 140, 255},
+}
+
 p1_score = 0
 p2_score = 0
 
@@ -56,16 +77,20 @@ function resetBall(serving_player)
 	ball_y = love.window.getHeight() / 2
 
 	if serving_player == 1 then
-		ball_speed_x = 100
+		ball_speed_x = 200
 	else
-		ball_speed_x = -100
+		ball_speed_x = -200
 	end
 
 	-- TODO : add some randomness
 	ball_speed_y = 20
 end
 
-global_timer = 0
+function resetStreaker()
+	streaker_x = love.window.getWidth()/2
+	streaker_y = love.window.getHeight() - separation_margin
+end
+
 function love.update(dt)
 	UI.update(dt)
 
@@ -136,6 +161,45 @@ function love.update(dt)
 	-- TODO : add some speed clamping, some prediction and some delay to make it more life-like
 	paddle_1_y = ball_y
 	paddle_2_y = ball_y
+
+	-- move streaker
+	local dx = 0
+	local dy = 0
+	if love.keyboard.isDown("left")  then dx = dx - 1 end
+	if love.keyboard.isDown("right") then dx = dx + 1 end
+	if love.keyboard.isDown("up")    then dy = dy - 1 end
+	if love.keyboard.isDown("down")  then dy = dy + 1 end
+	if dx ~= 0 or dy ~= 0 then
+		local div = math.sqrt(dx*dx + dy*dy)
+		dx = dt * streaker_speed * dx / div
+		dy = dt * streaker_speed * dy / div
+		streaker_x = streaker_x + dx
+		streaker_y = streaker_y + dy
+
+		-- hit screen boundaries
+		if streaker_x < 0                       then streaker_x = 0 end
+		if streaker_x > love.window.getWidth()  then streaker_x = love.window.getWidth() end
+		if streaker_y < 0                       then streaker_y = 0 end
+		if streaker_y > love.window.getHeight() then streaker_y = love.window.getHeight() end
+
+		-- catch ball
+		local dist_x = ball_x - streaker_x
+		local dist_y = ball_y - streaker_y
+		if math.sqrt(dist_x*dist_x + dist_y*dist_y) < streaker_width then
+			local default_serving_player = 1
+			if ball_x > love.graphics.getWidth()/2 then default_serving_player = 2 end
+			resetBall(default_serving_player)
+			resetStreaker()
+		end
+	end
+
+	-- streaker color blending 
+	streaker_blend = streaker_blend + dt
+	if streaker_blend > 1 then
+		streaker_blend = streaker_blend - 1
+		-- TODO : create a new random map instead of just swapping
+		streaker_map_1, streaker_map_2 = streaker_map_2, streaker_map_1
+	end
 end
 
 function drawDigit(x, y, digit)
@@ -209,6 +273,27 @@ function drawScore()
 	end
 end
 
+function drawStreaker()
+	local beg_x = streaker_x - streaker_width/2
+	local beg_y = streaker_y - streaker_width/2
+	local incr = streaker_width/3
+
+	for x = 0, 2, 1 do
+		for y = 0, 2, 1 do
+			local col_1 = streaker_colors[streaker_map_1[1 + x + 3*y]]
+			local col_2 = streaker_colors[streaker_map_2[1 + x + 3*y]]
+			local col = {}
+			for i = 1,4,1 do
+				col[i] = col_1[i] * (1-streaker_blend) + col_2[i] * streaker_blend
+			end
+			love.graphics.setColor(col)
+			love.graphics.rectangle("fill", beg_x + x*incr, beg_y + y*incr, incr, incr)
+		end
+	end
+	-- restore white
+	love.graphics.setColor(255, 255, 255)
+end
+
 function love.draw()
 	-- Draw ball
 	love.graphics.rectangle("fill", ball_x - ball_width/2, ball_y - ball_width/2, ball_width, ball_width)
@@ -229,7 +314,7 @@ function love.draw()
 	drawScore()
 
 	-- Draw streaker --
-	-- TODO --
+	drawStreaker()
 
 	UI.draw()
 end
