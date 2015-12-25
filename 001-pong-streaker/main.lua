@@ -216,9 +216,9 @@ function love.update(dt)
 		if streaker_y > love.window.getHeight() then streaker_y = love.window.getHeight() end
 
 		-- catch ball
-		local dist_x = ball_x - streaker_x
-		local dist_y = ball_y - streaker_y
-		if math.sqrt(dist_x*dist_x + dist_y*dist_y) < streaker_width then
+		local in_x = ball_x - streaker_x < streaker_width and ball_x - streaker_x > -streaker_width
+		local in_y = ball_y - streaker_y < streaker_width and ball_y - streaker_y > -streaker_width
+		if in_x and in_y then
 			local default_serving_player = 1
 			if ball_x > love.graphics.getWidth()/2 then default_serving_player = 2 end
 			resetBall(default_serving_player)
