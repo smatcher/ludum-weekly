@@ -9,8 +9,13 @@ paddle_start_y = 300
 
 paddle_1_x = paddle_start_x
 paddle_1_y = paddle_start_y
+paddle_1_speed = 0
 paddle_2_x = love.window.getWidth() - paddle_start_x
 paddle_2_y = paddle_start_y
+paddle_2_speed = 0
+
+max_paddle_speed = 100
+max_paddle_acceleration = 200
 
 ball_width = 10
 ball_x = love.window.getWidth() / 2
@@ -161,9 +166,29 @@ function love.update(dt)
 	end
 
 	-- paddles track the ball
-	-- TODO : add some speed clamping, some prediction and some delay to make it more life-like
-	paddle_1_y = ball_y
-	paddle_2_y = ball_y
+	-- TODO : add some prediction and some delay to make it more life-like
+	local paddle_acceleration = max_paddle_acceleration * dt
+	local paddle_1_target = ball_y
+	if ball_speed_x > 0 then
+		paddle_1_target = love.window.getHeight()/2
+	end
+	if paddle_1_y > paddle_1_target then
+		paddle_1_speed = math.max(paddle_1_speed - paddle_acceleration, -max_paddle_speed)
+	elseif paddle_1_y < paddle_1_target then
+		paddle_1_speed = math.min(paddle_1_speed + paddle_acceleration, max_paddle_speed)
+	end
+	paddle_1_y = paddle_1_y + paddle_1_speed * dt
+
+	local paddle_2_target = ball_y
+	if ball_speed_x < 0 then
+		paddle_2_target = love.window.getHeight()/2
+	end
+	if paddle_2_y > paddle_2_target then
+		paddle_2_speed = math.max(paddle_2_speed - paddle_acceleration, -max_paddle_speed)
+	elseif paddle_2_y < paddle_2_target then
+		paddle_2_speed = math.min(paddle_2_speed + paddle_acceleration, max_paddle_speed)
+	end
+	paddle_2_y = paddle_2_y + paddle_2_speed * dt
 
 	-- move streaker
 	local dx = 0
