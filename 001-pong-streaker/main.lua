@@ -1,6 +1,6 @@
 require "love-toys.third-party.randomlua"
 
-local rng = mwc(0)
+rng = mwc(0)
 
 paddle_width = 6
 paddle_height = 120
@@ -78,6 +78,9 @@ function love.load()
 	UI = require "love-toys.third-party.LoveFrames"
 
 	resetBall(1)
+
+	hit_snd = love.audio.newSource("hit.wav")
+	hit_snd_2 = love.audio.newSource("hit2.wav")
 end
 
 function resetBall(serving_player)
@@ -128,6 +131,7 @@ function love.update(dt)
 	   ball_x - ball_width/2 > paddle_1_x + paddle_width/2 and
 	   new_ball_y > paddle_1_y - paddle_height/2 and
 	   new_ball_y < paddle_1_y + paddle_height/2 then
+		love.audio.play(hit_snd)
 		new_ball_x = ball_x
 		new_ball_speed_x = -ball_speed_x
 		-- TODO : increase speed (add some spin effect)
@@ -138,6 +142,7 @@ function love.update(dt)
 	   ball_x + ball_width/2 < paddle_2_x - paddle_width/2 and
 	   new_ball_y > paddle_2_y - paddle_height/2 and
 	   new_ball_y < paddle_2_y + paddle_height/2 then
+		love.audio.play(hit_snd_2)
 		new_ball_x = ball_x
 		new_ball_speed_x = -ball_speed_x
 		-- TODO : increase speed (add some spin effect)
