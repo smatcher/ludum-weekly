@@ -1,3 +1,6 @@
+require "love-toys.third-party.randomlua"
+
+local rng = mwc(0)
 
 paddle_width = 6
 paddle_height = 120
@@ -197,8 +200,15 @@ function love.update(dt)
 	streaker_blend = streaker_blend + dt
 	if streaker_blend > 1 then
 		streaker_blend = streaker_blend - 1
-		-- TODO : create a new random map instead of just swapping
+		-- swap streaker maps
 		streaker_map_1, streaker_map_2 = streaker_map_2, streaker_map_1
+		-- randomize the second map
+		for i = 1,8,1 do
+			local swap = streaker_map_2[i]
+			local swap_index = rng:random(i, 9)
+			streaker_map_2[i] = streaker_map_2[swap_index]
+			streaker_map_2[swap_index] = swap
+		end
 	end
 end
 
