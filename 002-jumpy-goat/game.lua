@@ -27,12 +27,31 @@ end
 function game:generatePlatforms()
 	if next(self.platforms) == nil then
 		-- Initial fill
-		table.insert(self.platforms, PlatformEntity(Vector(400 - 100, 500)))
-	else
-		-- Dump platforms under the screen
-
-		-- Create new platform offscreen
+		table.insert(self.platforms, PlatformEntity(Vector(400 - 100, 400 + 25 - 10)))
 	end
+
+	local max_offscreen_y = self.camera.y + 500 -- if a platform is below this value it is offscreen and must be destroyed (remember y points down so a lower value means it's higher onscreen)
+	local min_offscreen_y = self.camera.y - 500 -- the last platform should be at least as hight as this
+
+	-- Create new platform offscreen
+	local x = self.platforms[#self.platforms].position.x
+	local y = self.platforms[#self.platforms].position.y
+	while y > min_offscreen_y do
+		local dir = math.random(0, 1)
+		if dir == 0 then
+			x = x + 100
+		else
+			x = x - 100
+		end
+		y = y - 100
+		table.insert(self.platforms, PlatformEntity(Vector(x, y)))
+	end
+
+	-- Dump platforms under the screen
+	while self.platforms[1].position.y > max_offscreen_y do
+		table.remove(self.platforms, 1)
+	end
+
 end
 
 function game:updateCameraTarget()
