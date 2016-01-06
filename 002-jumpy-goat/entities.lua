@@ -8,7 +8,7 @@ PlayerEntity = Class {
 	end;
 
 	draw = function(self)
-		love.graphics.rectangle("fill", self.position.x, self.position.y, 50, 50)
+		love.graphics.rectangle("fill", self.position.x - 25, self.position.y - 25, 50, 50)
 	end;
 
 	LeftDirection = 0;
@@ -21,7 +21,7 @@ PlatformEntity = Class {
 	end;
 
 	draw = function(self)
-		love.graphics.rectangle("fill", self.position.x, self.position.y, 200, 20)
+		love.graphics.rectangle("fill", self.position.x - 100, self.position.y - 10, 200, 20)
 	end;
 }
 

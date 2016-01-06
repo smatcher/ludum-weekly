@@ -8,7 +8,7 @@ require "entities"
 local game = {}
 
 function game:init()
-	self.player = PlayerEntity(Vector(400 - 25, 400 - 25))
+	self.player = PlayerEntity(Vector(400, 400))
 	self.platforms = {}
 	self.timer = Timer.new()
 
@@ -27,7 +27,8 @@ end
 function game:generatePlatforms()
 	if next(self.platforms) == nil then
 		-- Initial fill
-		table.insert(self.platforms, PlatformEntity(Vector(400 - 100, 400 + 25 - 10)))
+		table.insert(self.platforms, PlatformEntity(Vector(400, 400 + 35)))
+	self.current_platform = 1
 	end
 
 	local max_offscreen_y = self.camera.y + 500 -- if a platform is below this value it is offscreen and must be destroyed (remember y points down so a lower value means it's higher onscreen)
@@ -38,18 +39,21 @@ function game:generatePlatforms()
 	local y = self.platforms[#self.platforms].position.y
 	while y > min_offscreen_y do
 		local dir = math.random(0, 1)
+		local jiggle_x = math.random(-35, 35)
+		local jiggle_y = math.random(-25, 25)
 		if dir == 0 then
-			x = x + 100
+			x = x + 100 + jiggle_x
 		else
-			x = x - 100
+			x = x - 100 + jiggle_x
 		end
-		y = y - 100
+		y = y - 100 + jiggle_y
 		table.insert(self.platforms, PlatformEntity(Vector(x, y)))
 	end
 
 	-- Dump platforms under the screen
 	while self.platforms[1].position.y > max_offscreen_y do
 		table.remove(self.platforms, 1)
+		self.current_platform = self.current_platform - 1
 	end
 
 end
@@ -60,22 +64,30 @@ function game:updateCameraTarget()
 end
 
 function game:jumpPlayer()
-	local dx = 0
-	if self.player.direction == PlayerEntity.LeftDirection then
-		dx = -100
-	elseif self.player.direction == PlayerEntity.RightDirection then
-		dx = 100
-	end
-
-	local new_x = self.player.position.x + dx
-	local new_y = self.player.position.y - 100
-
+	local next_platform = self.platforms[self.current_platform + 1]
+	local new_x = next_platform.position.x
+	local new_y = next_platform.position.y - 35
 	local jump_time = 0.3
 	local next_jump_time = 0.5
-	self.timer.tween(jump_time, self.player.position, { y = new_y }, 'out-back')
-	self.timer.tween(jump_time, self.player.position, { x = new_x })
-	self.timer.after(jump_time, function() self:updateCameraTarget() end)
-	self.timer.after(next_jump_time, function() self:jumpPlayer() end)
+
+	local next_platform_direction = PlayerEntity.RightDirection
+	if self.player.position.x > next_platform.position.x then
+		next_platform_direction = PlayerEntity.LeftDirection
+	end
+
+	if self.player.direction == next_platform_direction then
+		-- Jump to the next step update score and what not
+		self.current_platform = self.current_platform + 1
+		self.timer.tween(jump_time, self.player.position, { y = new_y }, 'out-back')
+		self.timer.tween(jump_time, self.player.position, { x = new_x })
+		self.timer.after(jump_time, function() self:updateCameraTarget() end)
+		self.timer.after(next_jump_time, function() self:jumpPlayer() end)
+	else
+		-- Go to fail state
+		new_x = 2 * self.player.position.x - new_x
+		self.timer.tween(1.5 * jump_time, self.player.position, { y = new_y }, 'out-back', function() self.timer.tween(jump_time, self.player.position, { y = new_y + 300 }) end)
+		self.timer.tween(2.5 * jump_time, self.player.position, { x = new_x })
+	end
 end
 
 function game:draw()
