@@ -13,6 +13,7 @@ local goat_to_platform_offset = 64
 
 function game:init()
 	self.player = PlayerEntity(Vector(400, 400))
+	self.background = BackgroundEntity()
 	self.platforms = {}
 	self.timer = Timer.new()
 	self.score = 0
@@ -100,6 +101,7 @@ function game:jumpPlayer()
 end
 
 function game:draw()
+	self.background:draw(self.camera)
 	love.graphics.print("Score : " .. self.score, 10, 10)
 	love.graphics.print("High score : " .. self.high_score, 10, 30)
 
