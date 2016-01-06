@@ -7,6 +7,8 @@ states.Game = require "game"
 function love.load()
 	math.randomseed(os.time())
 
+	loadEntityAssets()
+
 	GameState.registerEvents()
 	GameState.switch(states.Menu)
 end

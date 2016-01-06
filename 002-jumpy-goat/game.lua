@@ -9,6 +9,8 @@ local game = {
 	high_score = 0
 }
 
+local goat_to_platform_offset = 64
+
 function game:init()
 	self.player = PlayerEntity(Vector(400, 400))
 	self.platforms = {}
@@ -30,7 +32,7 @@ end
 function game:generatePlatforms()
 	if next(self.platforms) == nil then
 		-- Initial fill
-		table.insert(self.platforms, PlatformEntity(Vector(400, 400 + 35)))
+		table.insert(self.platforms, PlatformEntity(Vector(400, 400 + goat_to_platform_offset)))
 	self.current_platform = 1
 	end
 
@@ -69,7 +71,7 @@ end
 function game:jumpPlayer()
 	local next_platform = self.platforms[self.current_platform + 1]
 	local new_x = next_platform.position.x
-	local new_y = next_platform.position.y - 35
+	local new_y = next_platform.position.y - goat_to_platform_offset
 	local jump_time = 0.3
 	local next_jump_time = 0.5
 

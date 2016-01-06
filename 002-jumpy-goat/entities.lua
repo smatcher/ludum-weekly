@@ -8,7 +8,12 @@ PlayerEntity = Class {
 	end;
 
 	draw = function(self)
-		love.graphics.rectangle("fill", self.position.x - 25, self.position.y - 25, 50, 50)
+		local g = PlayerEntity.texture
+		local x_scale = 1
+		if self.direction == PlayerEntity.RightDirection then
+			x_scale = -1
+		end
+		love.graphics.draw(g, self.position.x, self.position.y, 0, x_scale, 1, g:getWidth()/2, g:getHeight()/2)
 	end;
 
 	LeftDirection = 0;
@@ -21,7 +26,12 @@ PlatformEntity = Class {
 	end;
 
 	draw = function(self)
-		love.graphics.rectangle("fill", self.position.x - 100, self.position.y - 10, 200, 20)
+		local g = PlatformEntity.texture
+		love.graphics.draw(g, self.position.x, self.position.y, 0, 1, 1, g:getWidth()/2, g:getHeight()/2)
 	end;
 }
 
+function loadEntityAssets()
+	PlayerEntity.texture = love.graphics.newImage("goat.png")
+	PlatformEntity.texture = love.graphics.newImage("rock.png")
+end
