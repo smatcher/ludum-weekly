@@ -5,12 +5,15 @@ local Vector = require "love-toys.third-party.hump.vector"
 
 require "entities"
 
-local game = {}
+local game = {
+	high_score = 0
+}
 
 function game:init()
 	self.player = PlayerEntity(Vector(400, 400))
 	self.platforms = {}
 	self.timer = Timer.new()
+	self.score = 0
 
 	-- Init camera
 	self.cameraTarget = Vector(self.player.position.x, self.player.position.y)
@@ -77,6 +80,7 @@ function game:jumpPlayer()
 
 	if self.player.direction == next_platform_direction then
 		-- Jump to the next step update score and what not
+		self.score = self.score + 1
 		self.current_platform = self.current_platform + 1
 		self.timer.tween(jump_time, self.player.position, { y = new_y }, 'out-back')
 		self.timer.tween(jump_time, self.player.position, { x = new_x })
@@ -87,10 +91,16 @@ function game:jumpPlayer()
 		new_x = 2 * self.player.position.x - new_x
 		self.timer.tween(1.5 * jump_time, self.player.position, { y = new_y }, 'out-back', function() self.timer.tween(jump_time, self.player.position, { y = new_y + 300 }) end)
 		self.timer.tween(2.5 * jump_time, self.player.position, { x = new_x })
+		self.timer.after(3, function() self:init() end)
+
+		self.high_score = math.max(self.high_score, self.score)
 	end
 end
 
 function game:draw()
+	love.graphics.print("Score : " .. self.score, 10, 10)
+	love.graphics.print("High score : " .. self.high_score, 10, 30)
+
 	self.camera:attach()
 	for _, platform in pairs(self.platforms) do
 		platform:draw()
