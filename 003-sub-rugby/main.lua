@@ -6,6 +6,8 @@ states.Game = require "game"
 states.Connecting = require "connecting"
 states.Disconnected = require "disconnected"
 
+require "constants"
+
 function love.load()
 	math.randomseed(os.time())
 
