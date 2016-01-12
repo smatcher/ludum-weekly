@@ -16,16 +16,6 @@ function disconnected:update(dt)
 	Network:update(dt)
 end
 
-function disconnected:keypressed(key, code, isrepeat)
---	if key == 'left' then
---		self.player.direction = PlayerEntity.LeftDirection
---	end
---
---	if key == 'right' then
---		self.player.direction = PlayerEntity.RightDirection
---	end
-end
-
 function disconnected:keyreleased(key, code)
 	if key == 'return' then
 		Network:abort()

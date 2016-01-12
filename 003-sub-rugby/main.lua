@@ -1,4 +1,5 @@
 local GameState = require "love-toys.third-party.hump.gamestate" 
+local Entities = require "entities"
 
 states = {}
 states.Menu = require "menu"
@@ -11,7 +12,7 @@ require "constants"
 function love.load()
 	math.randomseed(os.time())
 
-	loadEntityAssets()
+	Entities:loadAssets()
 
 	GameState.registerEvents()
 	GameState.switch(states.Menu)

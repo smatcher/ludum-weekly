@@ -20,16 +20,6 @@ function connecting:update(dt)
 	Network:update(dt)
 end
 
-function connecting:keypressed(key, code, isrepeat)
---	if key == 'left' then
---		self.player.direction = PlayerEntity.LeftDirection
---	end
---
---	if key == 'right' then
---		self.player.direction = PlayerEntity.RightDirection
---	end
-end
-
 function connecting:keyreleased(key, code)
 	if key == 'f10' then
 		Network:abort()

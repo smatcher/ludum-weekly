@@ -3,6 +3,8 @@ local Binary = require "love-toys.third-party.Binary"
 local Lube = require "love-toys.third-party.LUBE"
 local GameState = require "love-toys.third-party.hump.gamestate"
 
+-- TODO: Prevent connection of more than one client
+
 local network = {
 	pong_timer = -1,
 
