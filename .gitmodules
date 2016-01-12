@@ -4,3 +4,6 @@
 [submodule "002-jumpy-goat/love-toys"]
 	path = 002-jumpy-goat/love-toys
 	url = http://github.com/smatcher/love-toys
+[submodule "003-sub-rugby/love-toys"]
+	path = 003-sub-rugby/love-toys
+	url = http://github.com/smatcher/love-toys
