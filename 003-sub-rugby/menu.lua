@@ -11,7 +11,11 @@ function menu:draw()
 	love.graphics.print("Press escape to quit", 10, 80)
 
 	if Network.server ~= nil then
-		local status = "(" .. #Network.server.clients .. "clients connected)"
+		local client_count = 0
+		for _ in pairs(Network.server.clients) do
+			client_count = client_count + 1
+		end
+		local status = "(" .. client_count .. " clients connected)"
 		love.graphics.print("Server running" .. status, 10, 130)
 	end
 
