@@ -30,22 +30,6 @@ end
 
 function menu:update(dt)
 	Network:update(dt)
-
-	if Network.client == nil then
-		return
-	end
-
-	if self.timer == nil then
-		self.timer = 0
-		self.times = 0
-	end
-	self.timer = self.timer + dt
-	if self.timer > 1 then
-		self.timer = 0
-		self.times = self.times + 1
-		print("sending message")
-		Network.client:send("Hello times " .. self.times)
-	end
 end
 
 function menu:keyreleased(key, code)
@@ -53,9 +37,14 @@ function menu:keyreleased(key, code)
 		GameState.switch(states.Game)
 	end
 	if key == 's' then
+		Network.callbacks.connect = function() GameState.switch(states.Game) end
+		Network.callbacks.disconnect = function() GameState.switch(states.Disconnected) end
 		Network:initServer()
+		GameState.switch(states.Connecting)
 	end
 	if key == 'c' then
+		Network.callbacks.connect = function() GameState.switch(states.Game) end
+		Network.callbacks.disconnect = function() GameState.switch(states.Disconnected) end
 		Network:initClient()
 	end
 	if key == 'escape' then

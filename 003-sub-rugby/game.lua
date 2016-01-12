@@ -4,6 +4,7 @@ local Timer = require "love-toys.third-party.hump.timer"
 local Vector = require "love-toys.third-party.hump.vector"
 
 local Entities = require "entities"
+local Network = require "network"
 
 local game = {
 }
@@ -12,9 +13,11 @@ function game:init()
 end
 
 function game:draw()
+	love.graphics.print("Press escape to return to menu", 10, 10)
 end
 
 function game:update(dt)
+	Network:update(dt)
 end
 
 function game:keypressed(key, code, isrepeat)
@@ -29,6 +32,7 @@ end
 
 function game:keyreleased(key, code)
 	if key == 'escape' then
+		Network:abort()
 		GameState.switch(states.Menu)
 	end
 end

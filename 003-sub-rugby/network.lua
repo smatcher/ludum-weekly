@@ -1,33 +1,100 @@
 local Class = require "love-toys.third-party.class" -- Common class
 local Binary = require "love-toys.third-party.Binary"
 local Lube = require "love-toys.third-party.LUBE"
+local GameState = require "love-toys.third-party.hump.gamestate"
 
-local network = {}
+local network = {
+	pong_timer = -1,
+
+	callbacks = {
+		connect = nil,
+		disconnect = nil,
+		recv = nil
+	}
+}
+
+local debug_trafic = true
+local use_tcp = true
+local ping_rate = 3
+local timeout_limit = 9
+
+local handshake_msg = "HAKA"
+local ping_msg = "PING"
+local pong_msg = "PONG" -- LUBE does not send a keep alive from the server to the client we do it ourselves
 
 function network:initClient()
 	assert(self.server == nil and self.client == nil)
 
 	self.data_blob = {}
-	self.client = Lube.tcpClient()
-	--self.client = Lube.udpClient()
-	self.client.callbacks.recv = function (data, client) print("recv", client, data) end
-	self.client.handshake = "[Haka]"
-	self.client:setPing(true, 9, "Ping")
+
+	if use_tcp then
+		self.client = Lube.tcpClient()
+	else
+		self.client = Lube.udpClient()
+	end
+
+	self.client.callbacks.recv = function (data, client)
+		if debug_trafic then
+			print("client recv", client, data)
+		end
+
+		if data == pong_msg then
+			self.pong_timer = 0
+		elseif self.callbacks.recv ~= nil then
+			self.callbacks.recv(data, client)
+		end
+	end
+	self.client.handshake = handshake_msg
+	self.client:setPing(true, ping_rate, ping_msg)
 	local ok, err = self.client:connect("127.0.0.1", 42003)
-	print(ok, err)
+	if ok then
+		self.pong_timer = 0
+
+		if self.callbacks.connect ~= nil then
+			self.callbacks.connect()
+		end
+	else
+		self:abort()
+	end
+	print("connection", ok, err)
 end
 
 function network:initServer()
 	assert(self.server == nil and self.client == nil)
 
 	self.data_blob = {}
-	self.server = Lube.tcpServer()
-	--self.server = Lube.udpServer()
-	self.server.callbacks.connect = function (client) print("connect", client) end
-	self.server.callbacks.disconnect = function (client) print("disconnect", client) end
-	self.server.callbacks.recv = function (data, client) print("recv", client, data) end
-	self.server.handshake = "[Haka]"
-	self.server:setPing(true, 9, "Ping")
+
+	if use_tcp then
+		self.server = Lube.tcpServer()
+	else
+		self.server = Lube.udpServer()
+	end
+
+	self.server.callbacks.connect = function (client)
+		print("connect", client)
+		self.pong_timer = 0
+		if self.callbacks.connect ~= nil then
+			self.callbacks.connect()
+		end
+	end
+	self.server.callbacks.disconnect = function (client)
+		print("disconnect", client)
+		self.pong_timer = -1
+		if self.callbacks.disconnect ~= nil then
+			self.callbacks.disconnect()
+		end
+	end
+	self.server.callbacks.recv = function (data, client)
+		if debug_trafic then
+			print("server recv", client, data)
+		end
+		if self.callbacks.recv ~= nil then
+			self.callbacks.recv(data)
+		end
+	end
+
+	self.server.handshake = handshake_msg
+	self.server:setPing(true, timeout_limit, ping_msg)
 	self.server:listen(42003)
 	print("server started")
 end
@@ -35,10 +102,48 @@ end
 function network:update(dt)
 	if self.server then
 		self.server:update(dt)
+
+		-- send pong if needed
+		if self.pong_timer >= 0 then
+			self.pong_timer = self.pong_timer + dt
+			if self.pong_timer > ping_rate then
+				for client_id,_ in pairs(self.server.clients) do
+					self.server:send(pong_msg, client_id)
+				end
+				self.pong_timer = 0
+			end
+		end
 	end
 	if self.client then
 		self.client:update(dt)
+
+		-- check if timeout
+		if self.pong_timer >= 0 then
+			self.pong_timer = self.pong_timer + dt
+			if self.pong_timer > timeout_limit then
+				print("client disconnect due to server loss", client)
+				if self.callbacks.disconnect ~= nil then
+					self:abort()
+					self.callbacks.disconnect()
+				end
+			end
+		end
 	end
+end
+
+function network:abort()
+	if self.server ~= nil then
+		self.server = nil
+		print("server destroyed")
+	end
+
+	if self.client ~= nil then
+		self.client:disconnect()
+		self.client = nil
+		print("client destroyed")
+	end
+
+	self.pong_timer = -1
 end
 
 return network
