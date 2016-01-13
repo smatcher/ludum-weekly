@@ -4,6 +4,7 @@ local Vector = require "love-toys.third-party.hump.vector"
 local Entities = {
 	GridClass = require "grid",
 	TooltipsClass = require "tooltips",
+	BombClass = require "bomb",
 	SubmarineClass = require "submarine",
 	ConsoleClass = require "console",
 }

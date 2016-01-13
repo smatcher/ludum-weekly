@@ -4,6 +4,11 @@ Constants = {
 		RespawnCooldown = 3,
 	},
 
+	Bomb = {
+		StartX = 12,
+		StartY = 8,
+	},
+
 	Grid = {
 		-- Number of cells
 		Width = 25,

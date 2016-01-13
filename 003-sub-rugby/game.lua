@@ -29,6 +29,8 @@ function game:init()
 		self.remote_subs[i] = Entities.SubmarineClass()
 		self.remote_subs[i].team = Entities.SubmarineClass.Teams.Remote
 	end
+	-- Create bomb
+	self.bomb = Entities.BombClass()
 
 	-- Init console
 	self.console:print("Welcome to SubRugby !", Constants.Colors.TextNormal)
@@ -50,6 +52,7 @@ function game:draw()
 	for _,sub in pairs(self.remote_subs) do
 		sub:draw(self.grid)
 	end
+	self.bomb:draw(self.grid)
 	-- Console
 	self.console:draw()
 	-- Tooltips
