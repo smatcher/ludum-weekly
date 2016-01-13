@@ -1,15 +1,24 @@
 local Class = require "love-toys.third-party.hump.class"
 
+require "constants"
+
 local GridClass = Class {}
+
+-- precompute some values
+local CellWidth = Constants.Grid.DrawWidth / Constants.Grid.Width
+local CellHeight = Constants.Grid.DrawHeight / Constants.Grid.Height
 
 function GridClass:init()
 end
 
+function GridClass:cellCoord(cell_x, cell_y)
+	local pix_x = Constants.Grid.DrawX + cell_x * CellWidth
+	local pix_y = Constants.Grid.DrawY + cell_y * CellHeight
+	return pix_x, pix_y
+end
+
 function GridClass:draw()
 	local color_bkp = {love.graphics.getColor()}
-
-	local CellWidth = Constants.Grid.DrawWidth / Constants.Grid.Width
-	local CellHeight = Constants.Grid.DrawHeight / Constants.Grid.Height
 
 	-- Team areas
 	love.graphics.setColor(Constants.Colors.TeamRedArea)
