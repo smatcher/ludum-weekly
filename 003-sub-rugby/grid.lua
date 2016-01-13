@@ -26,14 +26,14 @@ function GridClass:disableHovering()
 end
 
 function GridClass:isPlayerTeamArea(cell_x, cell_y)
-	local x_in_area = cell_x >= 0 and cell_x < Constants.Grid.Width
-	local y_in_area = cell_y >= Constants.Grid.Height - Constants.Grid.TeamAreaDepth and cell_y < Constants.Grid.Height
+	local x_in_area = cell_x >= 0 and cell_x < Constants.Grid.TeamAreaDepth
+	local y_in_area = cell_y >= 0 and cell_y < Constants.Grid.Height
 	return x_in_area and y_in_area
 end
 
 function GridClass:isRemoteTeamArea(cell_x, cell_y)
-	local x_in_area = cell_x >= 0 and cell_x < Constants.Grid.Width
-	local y_in_area = cell_y >= 0 and cell_y < Constants.Grid.TeamAreaDepth
+	local x_in_area = cell_x >= Constants.Grid.Width - Constants.Grid.TeamAreaDepth and cell_x < Constants.Grid.Width
+	local y_in_area = cell_y >= 0 and cell_y < Constants.Grid.Height
 	return x_in_area and y_in_area
 end
 
@@ -59,20 +59,20 @@ function GridClass:draw()
 	local color_bkp = {love.graphics.getColor()}
 
 	-- Team areas
-	love.graphics.setColor(Constants.Colors.TeamRedArea)
-	local team_area_height = CellHeight * Constants.Grid.TeamAreaDepth
+	love.graphics.setColor(Constants.Colors.TeamGreenArea)
+	local team_area_width = CellWidth * Constants.Grid.TeamAreaDepth
 	love.graphics.rectangle("fill", 
 		Constants.Grid.DrawX,
 		Constants.Grid.DrawY,
-		Constants.Grid.DrawWidth,
-		team_area_height
+		team_area_width,
+		Constants.Grid.DrawHeight
 	)
-	love.graphics.setColor(Constants.Colors.TeamGreenArea)
+	love.graphics.setColor(Constants.Colors.TeamRedArea)
 	love.graphics.rectangle("fill", 
-		Constants.Grid.DrawX,
-		Constants.Grid.DrawY + Constants.Grid.DrawHeight - team_area_height,
-		Constants.Grid.DrawWidth,
-		team_area_height
+		Constants.Grid.DrawX + Constants.Grid.DrawWidth - team_area_width,
+		Constants.Grid.DrawY,
+		team_area_width,
+		Constants.Grid.DrawHeight
 	)
 
 	-- Hovered cell

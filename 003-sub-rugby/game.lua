@@ -14,7 +14,7 @@ local GamePhases = {
 }
 
 local game = {
-	grid_background = Entities.GridClass(),
+	grid = Entities.GridClass(),
 	tooltips = Entities.TooltipsClass(),
 	console = Entities.ConsoleClass(),
 }
@@ -42,13 +42,13 @@ function game:draw()
 	-- Background
 	love.graphics.clear(Constants.Colors.Background)
 	-- Grid
-	self.grid_background:draw()
+	self.grid:draw()
 	-- Units
 	for _,sub in pairs(self.player_subs) do
-		sub:draw(self.grid_background)
+		sub:draw(self.grid)
 	end
 	for _,sub in pairs(self.remote_subs) do
-		sub:draw(self.grid_background)
+		sub:draw(self.grid)
 	end
 	-- Console
 	self.console:draw()
@@ -69,13 +69,13 @@ end
 
 function game:mousemoved(x, y, dx, dy)
 	self.tooltips:mousemoved(x, y, dx, dy)
-	self.grid_background:mousemoved(x, y, dx, dy)
+	self.grid:mousemoved(x, y, dx, dy)
 end
 
 function game:mousereleased(x, y, button)
 	if self.current_phase == GamePhases.Deployment then
-		local cell_x, cell_y = self.grid_background:cellAtCoord(x, y)
-		if self.grid_background:isPlayerTeamArea(cell_x, cell_y) then
+		local cell_x, cell_y = self.grid:cellAtCoord(x, y)
+		if self.grid:isPlayerTeamArea(cell_x, cell_y) then
 			self:deploySub(cell_x, cell_y)
 		end
 	end
@@ -93,7 +93,7 @@ function game:setPhase(phase)
 		end
 		if #self.submarines_to_deploy > 0 then
 			self.console:print("You have " .. #self.submarines_to_deploy .. " submarines to deploy.", Constants.Colors.TextInfo)
-			self.grid_background:enableHovering(function(x, y) return game.grid_background:isPlayerTeamArea(x, y) end)
+			self.grid:enableHovering(function(x, y) return game.grid:isPlayerTeamArea(x, y) end)
 		else
 			self:setPhase(GamePhases.Orders)
 		end
@@ -101,7 +101,7 @@ function game:setPhase(phase)
 		self.console:print("Fleet ready to receive orders.", Constants.Colors.TextInfo)
 
 		-- Hovering functor reacts to player submarines only
-		self.grid_background:enableHovering(function(x, y)
+		self.grid:enableHovering(function(x, y)
 			for _,v in pairs(game.player_subs) do
 				if v.in_game and v.x == x and v.y == y then
 					return true

@@ -6,14 +6,14 @@ Constants = {
 
 	Grid = {
 		-- Number of cells
-		Width = 17,
+		Width = 25,
 		Height = 17,
-		TeamAreaDepth = 2,
+		TeamAreaDepth = 3,
 
 		-- Pixel dimensions
-		DrawWidth = 400,
-		DrawHeight = 400,
-		DrawX = 50,
+		DrawWidth = 600,
+		DrawHeight = 408,
+		DrawX = 100,
 		DrawY = 25,
 		HorMarkerOffsetX = 6, -- Horizontal marker offset
 		HorMarkerOffsetY = 14,
@@ -22,7 +22,7 @@ Constants = {
 	},
 
 	Tooltips = {
-		DrawX = (800 - 64 - 4),
+		DrawX = (800 - 32 - 4),
 		DrawY = 4,
 		DrawInfoX = 500,
 		DrawInfoY = 0,
@@ -33,9 +33,9 @@ Constants = {
 	},
 
 	Console = {
-		DrawWidth = 450,
+		DrawWidth = 650,
 		DrawHeight = 125,
-		DrawX = 25,
+		DrawX = 75,
 		DrawY = 450,
 		DrawRadius = 2,
 		TextOffsetX = 5,
