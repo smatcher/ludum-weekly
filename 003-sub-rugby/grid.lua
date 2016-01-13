@@ -9,6 +9,32 @@ local CellWidth = Constants.Grid.DrawWidth / Constants.Grid.Width
 local CellHeight = Constants.Grid.DrawHeight / Constants.Grid.Height
 
 function GridClass:init()
+	self.hovering_enabled = false
+	self.hovering_condition_hook = nil
+	self.hovered_cell = nil
+	self.flashing_tile_color = {192, 192, 192, 192} -- TODO: flash with a timer
+end
+
+function GridClass:enableHovering(condition_hook)
+	self.hovering_enabled = true
+	self.hovering_condition_hook = condition_hook
+	self.hovered_cell = nil
+end
+
+function GridClass:disableHovering()
+	self.hovering_enabled = false
+end
+
+function GridClass:isPlayerTeamArea(cell_x, cell_y)
+	local x_in_area = cell_x >= 0 and cell_x < Constants.Grid.Width
+	local y_in_area = cell_y >= Constants.Grid.Height - Constants.Grid.TeamAreaDepth and cell_y < Constants.Grid.Height
+	return x_in_area and y_in_area
+end
+
+function GridClass:isRemoteTeamArea(cell_x, cell_y)
+	local x_in_area = cell_x >= 0 and cell_x < Constants.Grid.Width
+	local y_in_area = cell_y >= 0 and cell_y < Constants.Grid.TeamAreaDepth
+	return x_in_area and y_in_area
 end
 
 function GridClass:cellCoord(cell_x, cell_y)
@@ -17,24 +43,48 @@ function GridClass:cellCoord(cell_x, cell_y)
 	return pix_x, pix_y
 end
 
+function GridClass:cellAtCoord(pix_x, pix_y)
+	local cell_x = math.floor((pix_x - Constants.Grid.DrawX) / CellWidth)
+	local cell_y = math.floor((pix_y - Constants.Grid.DrawY) / CellHeight)
+	if cell_x < 0
+	or cell_x >= Constants.Grid.Width
+	or cell_y < 0
+	or cell_y >= Constants.Grid.Height then
+		return -1, -1
+	end
+	return cell_x, cell_y
+end
+
 function GridClass:draw()
 	local color_bkp = {love.graphics.getColor()}
 
 	-- Team areas
 	love.graphics.setColor(Constants.Colors.TeamRedArea)
+	local team_area_height = CellHeight * Constants.Grid.TeamAreaDepth
 	love.graphics.rectangle("fill", 
 		Constants.Grid.DrawX,
 		Constants.Grid.DrawY,
 		Constants.Grid.DrawWidth,
-		CellHeight * 2
+		team_area_height
 	)
 	love.graphics.setColor(Constants.Colors.TeamGreenArea)
 	love.graphics.rectangle("fill", 
 		Constants.Grid.DrawX,
-		Constants.Grid.DrawY + Constants.Grid.DrawHeight - CellHeight * 2,
+		Constants.Grid.DrawY + Constants.Grid.DrawHeight - team_area_height,
 		Constants.Grid.DrawWidth,
-		CellHeight * 2
+		team_area_height
 	)
+
+	-- Hovered cell
+	if self.hovered_cell ~= nil then
+		love.graphics.setColor(self.flashing_tile_color)
+		love.graphics.rectangle("fill", 
+			Constants.Grid.DrawX + self.hovered_cell[1] * CellWidth,
+			Constants.Grid.DrawY + self.hovered_cell[2] * CellHeight,
+			CellWidth,
+			CellHeight
+		)
+	end
 
 	-- Grid (with coordinate markers)
 	love.graphics.setColor(Constants.Colors.GridMarkings)
@@ -86,6 +136,20 @@ function GridClass:draw()
 end
 
 function GridClass:update(dt)
+end
+
+function GridClass:mousemoved(x, y, dx, dt)
+	if self.hovering_enabled then
+		local cell_x, cell_y = self:cellAtCoord(x, y)
+		local cell_correct = cell_x >= 0 and cell_y >= 0  -- cellAtcoord will return -1, -1 on incorrect coords
+		local hook_correct = self.hovering_condition_hook == nil or self.hovering_condition_hook(cell_x, cell_y)
+
+		if cell_correct and hook_correct then
+			self.hovered_cell = {cell_x, cell_y}
+		else
+			self.hovered_cell = nil
+		end
+	end
 end
 
 return GridClass

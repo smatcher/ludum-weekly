@@ -8,6 +8,7 @@ Constants = {
 		-- Number of cells
 		Width = 17,
 		Height = 17,
+		TeamAreaDepth = 2,
 
 		-- Pixel dimensions
 		DrawWidth = 400,
@@ -23,6 +24,12 @@ Constants = {
 	Tooltips = {
 		DrawX = (800 - 64 - 4),
 		DrawY = 4,
+		DrawInfoX = 500,
+		DrawInfoY = 0,
+		DrawInfoWidth = 300,
+		DrawInfoHeight = 600,
+		TextOffsetX = 5,
+		TextOffsetY = 5,
 	},
 
 	Console = {
@@ -40,7 +47,7 @@ Constants = {
 	Colors = {
 		Background = {105, 140, 160, 255},
 		ConsoleBackground = {27, 33, 37, 255},
-		--ConsoleBackground = {64, 80, 90, 255},
+		TooltipBackground = {27, 33, 37, 192},
 		TeamRedArea = {160, 105, 140, 255},
 		TeamGreenArea = {140, 160, 107, 255},
 		GridMarkings = {255, 255, 255, 255},

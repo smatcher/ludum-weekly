@@ -23,6 +23,21 @@ function TooltipsClass:draw()
 		Constants.Tooltips.DrawY
 	)
 
+	if self.hovered then
+		love.graphics.setColor(Constants.Colors.TooltipBackground)
+		love.graphics.rectangle("fill",
+			Constants.Tooltips.DrawInfoX,
+			Constants.Tooltips.DrawInfoY,
+			Constants.Tooltips.DrawInfoWidth,
+			Constants.Tooltips.DrawInfoHeight
+		)
+		love.graphics.setColor(Constants.Colors.TextNormal)
+		love.graphics.print("Work in progress : Tooltips aren't functional yet",
+			Constants.Tooltips.DrawInfoX + Constants.Tooltips.TextOffsetX,
+			Constants.Tooltips.DrawInfoY + Constants.Tooltips.TextOffsetY
+		)
+	end
+
 	love.graphics.setColor(Constants.Colors.Default)
 end
 

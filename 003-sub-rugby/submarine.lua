@@ -68,10 +68,11 @@ function SubmarineClass:draw(grid)
 
 	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
 	love.graphics.rectangle("fill",
-		draw_x,
-		draw_y,
-		24, -- Hardcoded while not definitive draw function
-		24
+		draw_x + 2,
+		draw_y + 2,
+		20, -- Hardcoded while not definitive draw function
+		20,
+		10
 	)
 	love.graphics.setColor(0,0,0,255)
 	local markers = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"}
