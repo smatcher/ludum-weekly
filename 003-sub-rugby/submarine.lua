@@ -53,9 +53,24 @@ function SubmarineClass:init()
 	self.direction = SubmarineClass.Directions.North
 	self.action_1 = nil
 	self.action_2 = nil
+	self.selected = false
 end
 
-function SubmarineClass:draw(grid)
+function SubmarineClass:drawActionMarker(action, draw_x, draw_y)
+	if action ~= nil then
+		love.graphics.setColor(0, 255, 0, 255)
+	else
+		love.graphics.setColor(96, 96, 96, 255)
+	end
+	love.graphics.rectangle("fill",
+		draw_x,
+		draw_y,
+		4, -- Hardcoded while not definitive draw function
+		4
+	)
+end
+
+function SubmarineClass:draw(grid, draw_action_markers)
 	if self.in_game == false then
 		return
 	end
@@ -66,6 +81,7 @@ function SubmarineClass:draw(grid)
 		love.graphics.setColor(255, 0, 0, 255) -- TODO : skip displaying Remote Subs
 	end
 
+	-- Actual submarine drawing
 	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
 	love.graphics.rectangle("fill",
 		draw_x + 2,
@@ -74,6 +90,24 @@ function SubmarineClass:draw(grid)
 		20,
 		10
 	)
+
+	-- Action taken markers
+	if draw_action_markers then
+		self:drawActionMarker(self.action_1, draw_x + 12, draw_y + 18)
+		self:drawActionMarker(self.action_2, draw_x + 18, draw_y + 18)
+	end
+
+	-- Selection marker
+	if self.selected then
+		love.graphics.setColor(255,0,0,255)
+		love.graphics.rectangle("line",
+			draw_x,
+			draw_y,
+			24, -- Hardcoded while not definitive draw function
+			24
+		)
+	end
+
 	love.graphics.setColor(0,0,0,255)
 	local markers = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"}
 	local marker = markers[self.direction+1]

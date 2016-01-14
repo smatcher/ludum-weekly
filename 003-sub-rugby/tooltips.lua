@@ -42,11 +42,28 @@ function TooltipsClass:draw()
 end
 
 function TooltipsClass:mousemoved(x, y, dx, dt)
-	self.hovered = (x >= Constants.Tooltips.DrawX  
-		and x <= Constants.Tooltips.DrawX + TooltipsClass.QuestionMark:getWidth()
-		and y >= Constants.Tooltips.DrawY
-		and y <= Constants.Tooltips.DrawY + TooltipsClass.QuestionMark:getHeight()
+	-- Default hit area is the tooltip icon
+	local hit_min_x = Constants.Tooltips.DrawX
+	local hit_max_x = Constants.Tooltips.DrawX + TooltipsClass.QuestionMark:getWidth()
+	local hit_min_y = Constants.Tooltips.DrawY
+	local hit_max_y = Constants.Tooltips.DrawY + TooltipsClass.QuestionMark:getHeight()
+
+	-- Extended hit area is the whole info area
+	if self.hovered then
+		hit_min_x = Constants.Tooltips.DrawInfoX
+		hit_max_x = Constants.Tooltips.DrawInfoX + Constants.Tooltips.DrawInfoWidth
+		hit_min_y = Constants.Tooltips.DrawInfoY
+		hit_max_y = Constants.Tooltips.DrawInfoY + Constants.Tooltips.DrawInfoHeight
+	end
+
+	-- Test hit area
+	self.hovered = (x >= hit_min_x
+		and x <= hit_max_x
+		and y >= hit_min_y
+		and y <= hit_max_y
 	)
+
+	-- Mark the tooltip as seen
 	if self.hovered then
 		self.new = false
 	end

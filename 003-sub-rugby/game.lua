@@ -17,6 +17,7 @@ local game = {
 	grid = Entities.GridClass(),
 	tooltips = Entities.TooltipsClass(),
 	console = Entities.ConsoleClass(),
+	orders_menu = Entities.OrdersMenuClass(),
 }
 
 function game:init()
@@ -46,15 +47,18 @@ function game:draw()
 	-- Grid
 	self.grid:draw()
 	-- Units
+	local draw_action_markers = self.current_phase == GamePhases.Orders
 	for _,sub in pairs(self.player_subs) do
-		sub:draw(self.grid)
+		sub:draw(self.grid, draw_action_markers)
 	end
 	for _,sub in pairs(self.remote_subs) do
-		sub:draw(self.grid)
+		sub:draw(self.grid, false)
 	end
 	self.bomb:draw(self.grid)
 	-- Console
 	self.console:draw()
+	-- Orders menu
+	self.orders_menu:draw()
 	-- Tooltips
 	self.tooltips:draw()
 end
@@ -73,61 +77,83 @@ end
 function game:mousemoved(x, y, dx, dy)
 	self.tooltips:mousemoved(x, y, dx, dy)
 	self.grid:mousemoved(x, y, dx, dy)
+	self.orders_menu:mousemoved(x, y, dx, dy)
 end
 
 function game:mousereleased(x, y, button)
+	local cell_x, cell_y = self.grid:cellAtCoord(x, y)
+
 	if self.current_phase == GamePhases.Deployment then
-		local cell_x, cell_y = self.grid:cellAtCoord(x, y)
-		if self.grid:isPlayerTeamArea(cell_x, cell_y) then
+	-- DEPLOYMENT PHASE --
+		if self.grid:isPlayerTeamArea(cell_x, cell_y) and self:playerSubAtCoord(cell_x, cell_y) == nil then
 			self:deploySub(cell_x, cell_y)
 		end
+
+	elseif self.current_phase == GamePhases.Orders then
+	-- ORDERS PHASE --
+		local player_sub_clicked = self:playerSubAtCoord(cell_x, cell_y)
+		if player_sub_clicked ~= nil then
+			self.orders_menu:selectSub(player_sub_clicked)
+		end
+
 	end
 end
 
 function game:setPhase(phase)
 	self.current_phase = phase
+
 	if phase == GamePhases.Deployment then
+	-- DEPLOYMENT PHASE --
+		-- Build submarines to deploy list
 		self.submarines_to_deploy = {}
 		for _,v in pairs(self.player_subs) do
 			if v.in_game == false and v.respawn_cooldown == 0 then
-				-- TODO: add to some selection list
 				table.insert(self.submarines_to_deploy, v)
 			end
 		end
+
 		if #self.submarines_to_deploy > 0 then
+			-- Begin deploying submarines
 			self.console:print("You have " .. #self.submarines_to_deploy .. " submarines to deploy.", Constants.Colors.TextInfo)
-			self.grid:enableHovering(function(x, y) return game.grid:isPlayerTeamArea(x, y) end)
+
+			-- Hovering functor reacts to free spots in player area
+			self.grid:enableHovering(function(x, y)
+				return (game.grid:isPlayerTeamArea(x, y) and game:playerSubAtCoord(x, y) == nil)
+			end)
 		else
+			-- No submarines to deploy (skipping this phase)
 			self:setPhase(GamePhases.Orders)
 		end
+
 	elseif phase == GamePhases.Orders then
+	-- ORDERS PHASE --
 		self.console:print("Fleet ready to receive orders.", Constants.Colors.TextInfo)
 
 		-- Hovering functor reacts to player submarines only
-		self.grid:enableHovering(function(x, y)
-			for _,v in pairs(game.player_subs) do
-				if v.in_game and v.x == x and v.y == y then
-					return true
-				end
-			end
-			return false
-		end)
+		self.grid:enableHovering(function(x, y) return game:playerSubAtCoord(x, y) ~= nil end)
+
 	elseif phase == GamePhases.AwaitingOtherPlayer then
+	-- AWAITING OTHER PLAYER PHASE --
 		self.console:print("Awaiting for opponent orders.", Constants.Colors.TextInfo)
+
 	elseif phase == GamePhases.Resolution then
+	-- TURN RESOLUTION PHASE --
+
 	elseif phase == GamePhases.GameOver then
+	-- GAME OVER PHASE --
 	end
 end
 
 function game:deploySub(cell_x, cell_y)
-	-- Pop a sub
+	-- Pop a submaring from the list of submarines to deploy
 	assert(#self.submarines_to_deploy > 0)
 	local sub = self.submarines_to_deploy[1]
 	table.remove(self.submarines_to_deploy, 1)
 
-	-- Fill sub data
+	-- Fill submarine data
 	sub.x = cell_x
 	sub.y = cell_y
+	sub.direction = Entities.SubmarineClass.Directions.East -- Player faces East
 	sub.in_game = true
 
 	-- TODO: prepare serialisation data for turn RPC
@@ -139,6 +165,15 @@ function game:deploySub(cell_x, cell_y)
 		self.console:print("Submarine deployed.", Constants.Colors.TextNormal)
 		self:setPhase(GamePhases.Orders)
 	end
+end
+
+function game:playerSubAtCoord(x, y)
+	for _,sub in pairs(self.player_subs) do
+		if sub.in_game and sub.x == x and sub.y == y then
+			return sub
+		end
+	end
+	return nil
 end
 
 return game

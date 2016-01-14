@@ -1,5 +1,3 @@
-local Class = require "love-toys.third-party.hump.class"
-local Vector = require "love-toys.third-party.hump.vector"
 
 local Entities = {
 	GridClass = require "grid",
@@ -7,6 +5,7 @@ local Entities = {
 	BombClass = require "bomb",
 	SubmarineClass = require "submarine",
 	ConsoleClass = require "console",
+	OrdersMenuClass = require "orders_menu",
 }
 
 function Entities:loadAssets()

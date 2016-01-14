@@ -37,6 +37,18 @@ Constants = {
 		TextOffsetY = 5,
 	},
 
+	OrdersMenu = {
+		DrawWidth = 650,
+		DrawHeight = 125,
+		DrawX = 75,
+		DrawY = 450,
+		DrawRadius = 2,
+		TextOffsetX = 5,
+		TextOffsetY = 5,
+		LineHeight = 20,
+		ColumnWidth = 150,
+	},
+
 	Console = {
 		DrawWidth = 650,
 		DrawHeight = 125,
@@ -52,7 +64,8 @@ Constants = {
 	Colors = {
 		Background = {105, 140, 160, 255},
 		ConsoleBackground = {27, 33, 37, 255},
-		TooltipBackground = {27, 33, 37, 192},
+		OrdersMenuBackground = {27, 33, 37, 255},
+		TooltipBackground = {10, 10, 10, 230},
 		TeamRedArea = {160, 105, 140, 255},
 		TeamGreenArea = {140, 160, 107, 255},
 		GridMarkings = {255, 255, 255, 255},
