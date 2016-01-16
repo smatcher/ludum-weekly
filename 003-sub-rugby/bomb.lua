@@ -9,16 +9,15 @@ function BombClass:init()
 end
 
 function BombClass:draw(grid)
-	love.graphics.setColor(192, 192, 32, 255)
 	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
-	love.graphics.rectangle("fill",
-		draw_x + 6,
-		draw_y + 6,
-		12, -- Hardcoded while not definitive draw function
-		12,
-		6
+	love.graphics.draw(BombClass.Bomb,
+		draw_x,
+		draw_y
 	)
-	love.graphics.setColor(Constants.Colors.Default)
+end
+
+function BombClass:loadAssets()
+	BombClass.Bomb = love.graphics.newImage("bomb.png")
 end
 
 return BombClass

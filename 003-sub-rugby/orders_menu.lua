@@ -5,13 +5,19 @@ local SubmarineClass = require "submarine"
 local OrdersMenuClass = Class {}
 
 local OrderButton = Class {
-	init = function(self, code, label, info, width)
+	init = function(self, code, label, info, width, not_stealthy)
 		self.code = code
 		self.label = label
 		self.hovered = false
 		self.enabled = true
 		self.width = width
 		self.info = info
+
+		if not_stealthy == true then
+			self.warn = true
+		else
+			self.warn = false
+		end
 	end,
 
 	setPosition = function(self, x, y)
@@ -24,11 +30,23 @@ local OrderButton = Class {
 		local y = self.y
 		if self.enabled then
 			if self.hovered then
-				love.graphics.setColor({64, 128, 255, 192})
+				if self.warn then
+					love.graphics.setColor({128, 64, 34, 192})
+				else
+					love.graphics.setColor({64, 128, 255, 192})
+				end
 				love.graphics.rectangle("fill", x-2, y-2, self.width, Constants.OrdersMenu.LineHeight)
-				love.graphics.setColor(Constants.Colors.TextHovered)
+				if self.warn then
+					love.graphics.setColor(Constants.Colors.TextHoveredAlert)
+				else
+					love.graphics.setColor(Constants.Colors.TextHovered)
+				end
 			else
-				love.graphics.setColor(Constants.Colors.TextNormal)
+				if self.warn then
+					love.graphics.setColor(Constants.Colors.TextAlert)
+				else
+					love.graphics.setColor(Constants.Colors.TextNormal)
+				end
 			end
 		else
 			love.graphics.setColor(Constants.Colors.TextDisabled)
@@ -59,10 +77,10 @@ function OrdersMenuClass:init()
 	self.move_orders = {
 		OrderButton(A.Move_1, "Move 1", "Move forward 1 cell", 60),
 		OrderButton(A.Move_2, "Move 2", "Move forward 2 cells", 60),
-		OrderButton(A.Move_3, "Move 3", "Move forward 3 cells *NON STEALTHY*", 60),
-		OrderButton(A.Move_4, "Move 4", "Move forward 4 cells *NON STEALTHY*", 60),
-		OrderButton(A.Move_5, "Move 5", "Move forward 5 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60),
-		OrderButton(A.Move_6, "Move 6", "Move forward 6 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60),
+		OrderButton(A.Move_3, "Move 3*", "Move forward 3 cells *NON STEALTHY*", 60, true),
+		OrderButton(A.Move_4, "Move 4*", "Move forward 4 cells *NON STEALTHY*", 60, true),
+		OrderButton(A.Move_5, "Move 5*", "Move forward 5 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60, true),
+		OrderButton(A.Move_6, "Move 6*", "Move forward 6 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60, true),
 	}
 
 	self.turn_orders = {
@@ -78,8 +96,8 @@ function OrdersMenuClass:init()
 	}
 
 	self.interact_orders = {
-		OrderButton(A.Fire,    "Fire"   , "Fire a torpedo *NON STEALTHY*", 60),
-		OrderButton(A.Special, "Special", "NOT IMPLEMENTED", 60),
+		OrderButton(A.Fire,    "Fire*"  , "Fire a torpedo *NON STEALTHY*", 60, true),
+		--OrderButton(A.Special, "Special", "NOT IMPLEMENTED", 60),
 		OrderButton(A.Grab,    "Grab"   , "Grab the bomb", 60),
 	}
 
@@ -267,7 +285,7 @@ function OrdersMenuClass:updateAvailableOrders()
 
 	-- Disabled for now
 	self.interact_orders[2].enabled = false
-	self.interact_orders[3].enabled = false
+	--self.interact_orders[3].enabled = false
 
 	-- Always enabled
 	self.other_orders[2].enabled = true

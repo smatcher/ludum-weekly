@@ -2,6 +2,7 @@ Constants = {
 	Game = {
 		SubCountPerTeam = 4,
 		RespawnCooldown = 3,
+		TorpedoSpeed = 6,
 	},
 
 	Bomb = {
@@ -89,6 +90,7 @@ Constants = {
 		TextInfo = {110, 160, 105, 255},
 		TextNormal = {192, 192, 192, 255},
 		TextHovered = {255, 255, 192, 255},
+		TextHoveredAlert = {255, 128, 64, 255},
 		TextDisabled = {92, 92, 92},
 		Default = {255, 255, 255, 255},
 	},
