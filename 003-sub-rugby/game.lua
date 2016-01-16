@@ -45,6 +45,9 @@ function game:init()
 	-- Create bomb
 	self.bomb = Entities.BombClass()
 
+	-- Create torpedoes
+	self.torpedoes = {}
+
 	-- Init console
 	self.console:print("Welcome to SubRugby !", Constants.Colors.TextNormal)
 	self.console:print("If you have any question hover the ? icon in the top right corner.", Constants.Colors.TextNormal)
@@ -216,10 +219,34 @@ function game:setPhase(phase)
 
 	elseif phase == GamePhases.Resolution then
 	-- TURN RESOLUTION PHASE --
+		self.console:print("Resolving turn.", Constants.Colors.TextInfo)
+		-- TODO : play a resolve animation
+		-- Reset bleep
+		for _,sub in pairs(self.player_subs) do sub.sonar_bleep = false end
+		-- Resolve actions
+		self:resolveAction(1)
+		self:resolveAction(2)
+		-- TODO : also wait or something
+		for _,sub in pairs(self.player_subs) do sub:resetOrders() end
+		self:setPhase(GamePhases.Deployment)
 
 	elseif phase == GamePhases.GameOver then
 	-- GAME OVER PHASE --
 	end
+end
+
+function game:resolveAction(suffix)
+	-- Move and rotate subs
+	for _,sub in pairs(self.player_subs) do
+		sub:resolveAction(sub["action_" .. suffix], self.torpedoes)
+	end
+	for _,sub in pairs(self.remote_subs) do
+		sub:resolveAction(sub["action_" .. suffix], self.torpedoes)
+	end
+	-- Move torpedoes
+
+	-- check destroyed subs
+
 end
 
 function game:deploySub(cell_x, cell_y)
@@ -267,13 +294,22 @@ end
 
 function game:decodeRemotePacket()
 	local t = Binary:unpack(self.remote_packet)
+	local function flipTurnOrder(action)
+			if action ~= nil
+			and action >= Entities.SubmarineClass.Actions.Turn_N
+			and action <= Entities.SubmarineClass.Actions.Turn_NW then
+				return 10 + ((action - 6)%8)
+			end
+			return action
+	end
+
 	for i,sub in pairs(self.remote_subs) do
 		sub.x = Constants.Grid.Width - t["X" .. i] - 1 -- Flip x
 		sub.y = Constants.Grid.Height - t["Y" .. i] - 1 -- Flip y
 		sub.in_game = t["IG" .. i]
 		sub.direction = (t["D" .. i] + 4) % 8 -- Flip 180 degrees
-		sub.action_1 = t["A1" .. i]
-		sub.action_2 = t["A2" .. i]
+		sub.action_1 = flipTurnOrder(t["A1" .. i])
+		sub.action_2 = flipTurnOrder(t["A2" .. i])
 	end
 end
 

@@ -43,6 +43,40 @@ local SubmarineClass = Class {
 	},
 }
 
+local function deltaCellsForDirection(d)
+	local ds = SubmarineClass.Directions
+	if d == ds.North then
+		return 0,-1
+	elseif d == ds.NorthEast then
+		return 1,-1
+	elseif d == ds.East then
+		return 1,0
+	elseif d == ds.SouthEast then
+		return 1,1
+	elseif d == ds.South then
+		return 0,1
+	elseif d == ds.SouthWest then
+		return -1,1
+	elseif d == ds.West then
+		return -1,0
+	elseif d == ds.NorthWest then
+		return -1,-1
+	end
+end
+
+local function isNonStealthyAction(action)
+	if action ~= nil then
+		if action  >= SubmarineClass.Actions.Move_3
+		and action <= SubmarineClass.Actions.Move_6 then
+			return true
+		end
+		if action == SubmarineClass.Actions.Fire then
+			return true
+		end
+	end
+	return false
+end
+
 function SubmarineClass:init()
 	self.sonar_bleep = false
 	self.team = SubmarineClass.Teams.Player
@@ -127,6 +161,38 @@ function SubmarineClass:ordersGiven()
 		return true
 	end
 	return self.action_1 ~= nil and self.action_2 ~= nil
+end
+
+function SubmarineClass:resetOrders()
+	self.action_1 = nil
+	self.action_2 = nil
+end
+
+function SubmarineClass:directionAfterAction(a)
+	if a ~= nil and a >= SubmarineClass.Actions.Turn_N and a <= SubmarineClass.Actions.Turn_NW then
+		return a - SubmarineClass.Actions.Turn_N
+	end
+	return self.direction
+end
+
+function SubmarineClass:positionAfterAction(a)
+	if a ~= nil and a >= SubmarineClass.Actions.Move_1 and a <= SubmarineClass.Actions.Move_6 then
+		local length = a + 1
+		local dx, dy = deltaCellsForDirection(self.direction)
+		return self.x + length * dx, self.y + length * dy
+	end
+	return self.x, self.y
+end
+
+function SubmarineClass:resolveAction(action, torpedoes)
+	self.x, self.y = self:positionAfterAction(action)
+	self.direction = self:directionAfterAction(action)
+
+	-- TODO : spawn torpedo
+
+	if isNonStealthyAction(action) then
+		self.sonar_bleep = true
+	end
 end
 
 return SubmarineClass
