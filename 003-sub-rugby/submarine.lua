@@ -127,6 +127,7 @@ function SubmarineClass:draw(grid, draw_action_markers)
 	end
 
 	if self.team ~= SubmarineClass.Teams.Player then
+		love.graphics.setColor(Constants.Colors.Default)
 		return
 	end
 
