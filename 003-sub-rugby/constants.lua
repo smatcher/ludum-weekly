@@ -43,7 +43,7 @@ Constants = {
 		DrawX = 75,
 		DrawY = 450,
 		DrawRadius = 2,
-		TextOffsetX = 5,
+		TextOffsetX = 15,
 		TextOffsetY = 5,
 		LineHeight = 20,
 		ColumnWidth = 150,
@@ -55,7 +55,7 @@ Constants = {
 		DrawX = 75,
 		DrawY = 450,
 		DrawRadius = 2,
-		TextOffsetX = 5,
+		TextOffsetX = 15,
 		TextOffsetY = 5,
 		LineHeight = 20,
 		MaxLines = 6
@@ -75,6 +75,8 @@ Constants = {
 		TextAlert = {230, 130, 55, 255},
 		TextInfo = {110, 160, 105, 255},
 		TextNormal = {192, 192, 192, 255},
+		TextHovered = {255, 255, 192, 255},
+		TextDisabled = {92, 92, 92},
 		Default = {255, 255, 255, 255},
 	},
 	
