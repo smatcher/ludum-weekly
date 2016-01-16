@@ -56,8 +56,8 @@ function SubmarineClass:init()
 	self.selected = false
 end
 
-function SubmarineClass:drawActionMarker(action, draw_x, draw_y)
-	if action ~= nil then
+function SubmarineClass:drawActionMarker(action, draw_x, draw_y, override)
+	if action ~= nil or override then
 		love.graphics.setColor(0, 255, 0, 255)
 	else
 		love.graphics.setColor(96, 96, 96, 255)
@@ -76,9 +76,9 @@ function SubmarineClass:draw(grid, draw_action_markers)
 	end
 
 	if self.team == SubmarineClass.Teams.Player then
-		love.graphics.setColor(0, 255, 0, 255)
+		love.graphics.setColor(0, 128, 0, 255)
 	else
-		love.graphics.setColor(255, 0, 0, 255) -- TODO : skip displaying Remote Subs
+		love.graphics.setColor(128, 0, 0, 255) -- TODO : skip displaying Remote Subs
 	end
 
 	-- Actual submarine drawing
@@ -93,8 +93,10 @@ function SubmarineClass:draw(grid, draw_action_markers)
 
 	-- Action taken markers
 	if draw_action_markers then
-		self:drawActionMarker(self.action_1, draw_x + 12, draw_y + 18)
-		self:drawActionMarker(self.action_2, draw_x + 18, draw_y + 18)
+		self:drawActionMarker(self.action_1, draw_x + 12, draw_y + 18, false)
+		local override = (self.action_1 == SubmarineClass.Actions.Move_5 
+			or self.action_1 == SubmarineClass.Actions.Move_6)
+		self:drawActionMarker(self.action_2, draw_x + 18, draw_y + 18, override)
 	end
 
 	-- Selection marker
@@ -117,6 +119,14 @@ function SubmarineClass:draw(grid, draw_action_markers)
 		love.graphics.print("b", draw_x + 14, draw_y + 10)
 	end
 	love.graphics.setColor(Constants.Colors.Default)
+end
+
+function SubmarineClass:ordersGiven()
+	if self.action_1 == SubmarineClass.Actions.Move_5
+	or self.action_1 == SubmarineClass.Actions.Move_6 then
+		return true
+	end
+	return self.action_1 ~= nil and self.action_2 ~= nil
 end
 
 return SubmarineClass

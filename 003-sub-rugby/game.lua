@@ -37,6 +37,10 @@ function game:init()
 	self.console:print("Welcome to SubRugby !", Constants.Colors.TextNormal)
 	self.console:print("If you have any question hover the ? icon in the top right corner.", Constants.Colors.TextNormal)
 
+	-- Misc
+	self.submit_button_visible = false
+	self.submit_button_hovered = false
+
 	-- Start the game
 	self:setPhase(GamePhases.Deployment)
 end
@@ -59,12 +63,42 @@ function game:draw()
 	self.console:draw()
 	-- Orders menu
 	self.orders_menu:draw()
+	-- Submit button
+	if self.submit_button_visible then
+		if self.submit_button_hovered then
+			love.graphics.setColor(Constants.Colors.SubmitHovered)
+		else
+			love.graphics.setColor(Constants.Colors.Submit)
+		end
+		love.graphics.rectangle("fill",
+			Constants.Submit.DrawX,
+			Constants.Submit.DrawY,
+			Constants.Submit.DrawWidth,
+			Constants.Submit.DrawHeight,
+			Constants.Submit.DrawRadius
+		)
+		love.graphics.setColor(Constants.Colors.Default)
+		love.graphics.print("Send orders",
+			Constants.Submit.DrawX + Constants.Submit.TextOffsetX,
+			Constants.Submit.DrawY + Constants.Submit.TextOffsetY
+		)
+	end
 	-- Tooltips
 	self.tooltips:draw()
 end
 
 function game:update(dt)
 	Network:update(dt)
+
+	self.submit_button_visible = false
+	if self.current_phase == GamePhases.Orders then
+		self.submit_button_visible = true
+		for _,s in pairs(self.player_subs) do
+			if s.in_game and not s:ordersGiven() then
+				self.submit_button_visible = false
+			end
+		end
+	end
 end
 
 function game:keyreleased(key, code)
@@ -74,10 +108,20 @@ function game:keyreleased(key, code)
 	end
 end
 
+local function hitSubmit(x, y)
+	return (x > Constants.Submit.DrawX
+		and x < Constants.Submit.DrawX + Constants.Submit.DrawWidth 
+		and y > Constants.Submit.DrawY
+		and y < Constants.Submit.DrawY + Constants.Submit.DrawHeight 
+	)
+end
+
 function game:mousemoved(x, y, dx, dy)
 	self.tooltips:mousemoved(x, y, dx, dy)
 	self.grid:mousemoved(x, y, dx, dy)
 	self.orders_menu:mousemoved(x, y, dx, dy)
+
+	self.submit_button_hovered = hitSubmit(x, y)
 end
 
 function game:mousereleased(x, y, button)
@@ -95,7 +139,12 @@ function game:mousereleased(x, y, button)
 		if player_sub_clicked ~= nil then
 			self.orders_menu:selectSub(player_sub_clicked)
 		end
-
+		self.orders_menu:mousereleased(x, y, button)
+		if self.submit_button_visible and hitSubmit(x, y) then
+			-- send orders and change phase
+			self.orders_menu:unselectSub()
+			self:setPhase(GamePhases.AwaitingOtherPlayer)
+		end
 	end
 end
 
@@ -134,6 +183,7 @@ function game:setPhase(phase)
 
 	elseif phase == GamePhases.AwaitingOtherPlayer then
 	-- AWAITING OTHER PLAYER PHASE --
+		-- TODO : netcode
 		self.console:print("Awaiting for opponent orders.", Constants.Colors.TextInfo)
 
 	elseif phase == GamePhases.Resolution then

@@ -45,6 +45,7 @@ Constants = {
 		DrawRadius = 2,
 		TextOffsetX = 15,
 		TextOffsetY = 5,
+		ActionDescriptionOffsetX = 400,
 		LineHeight = 20,
 		ColumnWidth = 150,
 	},
@@ -61,11 +62,23 @@ Constants = {
 		MaxLines = 6
 	},
 
+	Submit = {
+		DrawWidth = 125,
+		DrawHeight = 32,
+		DrawX = 600,
+		DrawY = 575 - 32, 
+		DrawRadius = 2,
+		TextOffsetX = 22,
+		TextOffsetY = 8,
+	},
+
 	Colors = {
 		Background = {105, 140, 160, 255},
 		ConsoleBackground = {27, 33, 37, 255},
 		OrdersMenuBackground = {27, 33, 37, 255},
 		TooltipBackground = {10, 10, 10, 230},
+		Submit = {46, 75, 67, 255},
+		SubmitHovered = {59, 145, 83, 255},
 		TeamRedArea = {160, 105, 140, 255},
 		TeamGreenArea = {140, 160, 107, 255},
 		GridMarkings = {255, 255, 255, 255},

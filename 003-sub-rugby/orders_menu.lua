@@ -52,36 +52,40 @@ function OrdersMenuClass:init()
 	self.visible = false
 	self.selected_sub = nil
 	self.info_text = ""
+	self.actions_description = ""
+
+	local A = SubmarineClass.Actions
 
 	self.move_orders = {
-		OrderButton(Move_1, "Move 1", "Move forward 1 cell", 60),
-		OrderButton(Move_2, "Move 2", "Move forward 2 cells", 60),
-		OrderButton(Move_3, "Move 3", "Move forward 3 cells *NON STEALTHY*", 60),
-		OrderButton(Move_4, "Move 4", "Move forward 4 cells *NON STEALTHY*", 60),
-		OrderButton(Move_5, "Move 5", "Move forward 5 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60),
-		OrderButton(Move_6, "Move 6", "Move forward 6 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60),
+		OrderButton(A.Move_1, "Move 1", "Move forward 1 cell", 60),
+		OrderButton(A.Move_2, "Move 2", "Move forward 2 cells", 60),
+		OrderButton(A.Move_3, "Move 3", "Move forward 3 cells *NON STEALTHY*", 60),
+		OrderButton(A.Move_4, "Move 4", "Move forward 4 cells *NON STEALTHY*", 60),
+		OrderButton(A.Move_5, "Move 5", "Move forward 5 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60),
+		OrderButton(A.Move_6, "Move 6", "Move forward 6 cells *NON STEALTHY* *TAKES 2 ACTIONS*", 60),
 	}
 
 	self.turn_orders = {
-		OrderButton(Turn_NW, "NW", "Turn the submarine to face north-west", 30),
-		OrderButton(Turn_N , "N" , "Turn the submarine to face north", 30),
-		OrderButton(Turn_NE, "NE", "Turn the submarine to face north-east", 30),
-		OrderButton(Turn_W , "W" , "Turn the submarine to face west", 30),
+		OrderButton(A.Turn_NW, "NW", "Turn the submarine to face north-west", 30),
+		OrderButton(A.Turn_N , "N" , "Turn the submarine to face north", 30),
+		OrderButton(A.Turn_NE, "NE", "Turn the submarine to face north-east", 30),
+		OrderButton(A.Turn_W , "W" , "Turn the submarine to face west", 30),
 		nil,
-		OrderButton(Turn_E , "E" , "Turn the submarine to face east", 30),
-		OrderButton(Turn_SW, "SW", "Turn the submarine to face south-west", 30),
-		OrderButton(Turn_S , "S" , "Turn the submarine to face south", 30),
-		OrderButton(Turn_SE, "SE", "Turn the submarine to face south-east", 30),
+		OrderButton(A.Turn_E , "E" , "Turn the submarine to face east", 30),
+		OrderButton(A.Turn_SW, "SW", "Turn the submarine to face south-west", 30),
+		OrderButton(A.Turn_S , "S" , "Turn the submarine to face south", 30),
+		OrderButton(A.Turn_SE, "SE", "Turn the submarine to face south-east", 30),
 	}
 
 	self.interact_orders = {
-		OrderButton(Fire,    "Fire"   , "Fire a torpedo *NON STEALTHY*", 60),
-		OrderButton(Special, "Special", "NOT IMPLEMENTED", 60),
-		OrderButton(Grab,    "Grab"   , "Grab the bomb", 60),
+		OrderButton(A.Fire,    "Fire"   , "Fire a torpedo *NON STEALTHY*", 60),
+		OrderButton(A.Special, "Special", "NOT IMPLEMENTED", 60),
+		OrderButton(A.Grab,    "Grab"   , "Grab the bomb", 60),
 	}
 
 	self.other_orders = {
-		OrderButton(Wait, "Wait", "Do nothing", 60),
+		OrderButton(A.Wait, "Wait",   "Do nothing", 60),
+		OrderButton(nil,    "Cancel", "Cancel orders", 60),
 	}
 
 	self:computeOrdersPositions()
@@ -142,6 +146,11 @@ function OrdersMenuClass:draw()
 		Constants.OrdersMenu.DrawY + Constants.OrdersMenu.TextOffsetY + 5*Constants.OrdersMenu.LineHeight
 	)
 
+	love.graphics.print(self.actions_description,
+		Constants.OrdersMenu.DrawX + Constants.OrdersMenu.ActionDescriptionOffsetX,
+		Constants.OrdersMenu.DrawY + Constants.OrdersMenu.TextOffsetY
+	)
+
 	local header_y = Constants.OrdersMenu.DrawY + Constants.OrdersMenu.TextOffsetY
 	local start_x = Constants.OrdersMenu.DrawX + Constants.OrdersMenu.TextOffsetX
 	local start_y = header_y + header_height
@@ -173,31 +182,91 @@ function OrdersMenuClass:draw()
 end
 
 function OrdersMenuClass:updateAvailableOrders()
-	for _,o in pairs(self.turn_orders) do
-		o.enabled = true
+	local function actionToLabel(action)
+		if action == nil then
+			return false, "..."
+		end
+		for _,o in pairs(self.move_orders)     do if o.code == action then return true, o.label end end
+		for _,o in pairs(self.turn_orders)     do if o.code == action then return true, o.label end end
+		for _,o in pairs(self.interact_orders) do if o.code == action then return true, o.label end end
+		for _,o in pairs(self.other_orders)    do if o.code == action then return true, o.label end end
+		return true, "UNKOWN"
 	end
+
+	local has_action1, action1_label = actionToLabel(self.selected_sub.action_1)
+	local has_action2, action2_label = actionToLabel(self.selected_sub.action_2)
+	if not has_action1 and not has_action2 then
+		self.actions_description = "No orders given"
+	elseif action1_label == "Move 5" or action1_label == "Move 6" then
+		self.actions_description = "Orders: " .. action1_label .. " (will take both actions)"
+	else
+		self.actions_description = "Orders: " .. action1_label .. ", " .. action2_label
+	end
+
+	
+	local has_any_free_action = true
+	-- Move5 and Move6 take both actions
+	if self.selected_sub.action_1 == SubmarineClass.Actions.Move_5
+	or self.selected_sub.action_1 == SubmarineClass.Actions.Move_6 then
+		has_any_free_action = false
+	end
+	-- Both actions are taken
+	if self.selected_sub.action_1 ~= nil
+	and self.selected_sub.action_2 ~= nil then
+		has_any_free_action = false
+	end
+
+	local function hasActionInCategory(c)
+		for _,o in pairs(c) do
+			if self.selected_sub.action_1 == o.code
+			or self.selected_sub.action_2 == o.code then
+				return true
+			end
+		end
+		return false
+	end
+
+	local can_move = has_any_free_action and not hasActionInCategory(self.move_orders)
+	local can_turn = has_any_free_action and not hasActionInCategory(self.turn_orders)
+	local can_interact = has_any_free_action and not hasActionInCategory(self.interact_orders)
+	local can_other = has_any_free_action
+
+	-- Move orders
+	for _,o in pairs(self.move_orders) do o.enabled = can_move end
+	-- Turn orders
+	for _,o in pairs(self.turn_orders) do o.enabled = can_turn end
+	if can_turn then
+		local d = self.selected_sub.direction
+		local ds = SubmarineClass.Directions
+		if d == ds.North then
+			self.turn_orders[2].enabled = false
+		elseif d == ds.NorthEast then
+			self.turn_orders[3].enabled = false
+		elseif d == ds.East then
+			self.turn_orders[6].enabled = false
+		elseif d == ds.SouthEast then
+			self.turn_orders[9].enabled = false
+		elseif d == ds.South then
+			self.turn_orders[8].enabled = false
+		elseif d == ds.SouthWest then
+			self.turn_orders[7].enabled = false
+		elseif d == ds.West then
+			self.turn_orders[4].enabled = false
+		elseif d == ds.NorthWest then
+			self.turn_orders[1].enabled = false
+		end
+	end
+	-- Interact orders
+	for _,o in pairs(self.interact_orders) do o.enabled = can_interact end
+	-- Other orders
+	for _,o in pairs(self.other_orders) do o.enabled = can_other end
+
+	-- Disabled for now
 	self.interact_orders[2].enabled = false
 	self.interact_orders[3].enabled = false
 
-	local d = self.selected_sub.direction
-	local ds = SubmarineClass.Directions
-	if d == ds.North then
-		self.turn_orders[2].enabled = false
-	elseif d == ds.NorthEast then
-		self.turn_orders[3].enabled = false
-	elseif d == ds.East then
-		self.turn_orders[6].enabled = false
-	elseif d == ds.SouthEast then
-		self.turn_orders[9].enabled = false
-	elseif d == ds.South then
-		self.turn_orders[8].enabled = false
-	elseif d == ds.SouthWest then
-		self.turn_orders[7].enabled = false
-	elseif d == ds.West then
-		self.turn_orders[4].enabled = false
-	elseif d == ds.NorthWest then
-		self.turn_orders[1].enabled = false
-	end
+	-- Always enabled
+	self.other_orders[2].enabled = true
 end
 
 function OrdersMenuClass:selectSub(sub)
@@ -230,6 +299,32 @@ function OrdersMenuClass:mousemoved(x, y, dx, dy)
 	updateHovered(self.turn_orders)
 	updateHovered(self.interact_orders)
 	updateHovered(self.other_orders)
+end
+
+function OrdersMenuClass:mousereleased(x, y, button)
+	if self.visible == false then
+		return
+	end
+
+	local function handleClick(t)
+		for _,o in pairs(t) do
+			if o.enabled and o:hit(x, y) then
+				if o.code == nil then
+					self.selected_sub.action_1 = nil
+					self.selected_sub.action_2 = nil
+				elseif self.selected_sub.action_1 == nil then
+					self.selected_sub.action_1 = o.code
+				else
+					self.selected_sub.action_2 = o.code
+				end
+				self:updateAvailableOrders()
+			end
+		end
+	end
+	handleClick(self.move_orders)
+	handleClick(self.turn_orders)
+	handleClick(self.interact_orders)
+	handleClick(self.other_orders)
 end
 
 return OrdersMenuClass
