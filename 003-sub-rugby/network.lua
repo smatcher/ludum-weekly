@@ -15,7 +15,7 @@ local network = {
 	}
 }
 
-local debug_trafic = true
+local debug_trafic = false
 local use_tcp = true
 local ping_rate = 3
 local timeout_limit = 9

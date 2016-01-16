@@ -228,7 +228,12 @@ function game:setPhase(phase)
 		self:resolveAction(1)
 		self:resolveAction(2)
 		-- TODO : also wait or something
-		for _,sub in pairs(self.player_subs) do sub:resetOrders() end
+		for _,sub in pairs(self.player_subs) do
+			sub:resetOrders()
+			if not sub.in_game then
+				sub.respawn_cooldown = sub.respawn_cooldown - 1
+			end
+		end
 		for _,sub in pairs(self.remote_subs) do sub:resetOrders() end
 		self:setPhase(GamePhases.Deployment)
 
@@ -238,16 +243,41 @@ function game:setPhase(phase)
 end
 
 function game:resolveAction(suffix)
+	local all_subs = {}
+	for _,sub in pairs(self.player_subs) do if sub.in_game then table.insert(all_subs, sub) end end
+	for _,sub in pairs(self.remote_subs) do if sub.in_game then table.insert(all_subs, sub) end end
+
 	-- Move and rotate subs
-	for _,sub in pairs(self.player_subs) do
+	for _,sub in pairs(all_subs) do
 		sub:resolveAction(sub["action_" .. suffix], self.torpedoes)
 	end
-	for _,sub in pairs(self.remote_subs) do
-		sub:resolveAction(sub["action_" .. suffix], self.torpedoes)
-	end
+
+	local destroyed_subs = {}
 	-- Move torpedoes
 
 	-- check destroyed subs
+	for _,sub in pairs(all_subs) do
+		for _,sub2 in pairs(all_subs) do
+			if sub ~= sub2 and sub.x == sub2.x and sub.y == sub2.y then
+				-- collision
+				destroyed_subs[sub] = true
+				destroyed_subs[sub2] = true
+			end
+		end
+	end
+		
+	
+	-- do destruction
+	for s,_ in pairs(destroyed_subs) do
+			if s.team == Entities.SubmarineClass.Teams.Player then
+				self.console:print("Submarine destroyed", Constants.Colors.TextAlert)
+			else
+				-- Do we need kill confirmations ?
+				self.console:print("Enemy submarine destroyed", Constants.Colors.TextNormal)
+			end
+			s.in_game = false
+			s.respawn_cooldown = Constants.Game.RespawnCooldown + 1
+	end
 
 end
 

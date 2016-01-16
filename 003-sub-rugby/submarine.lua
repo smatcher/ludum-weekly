@@ -108,9 +108,11 @@ function SubmarineClass:drawActionMarker(action, draw_x, draw_y, override)
 end
 
 function SubmarineClass:draw(grid, draw_action_markers)
-	if self.in_game == false then
+	if self.x < 0 or self.y < 0 then
 		return
 	end
+
+	draw_action_markers = draw_action_markers and self.in_game
 
 	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
 
@@ -124,9 +126,9 @@ function SubmarineClass:draw(grid, draw_action_markers)
 		)
 	end
 
---	if self.team ~= SubmarineClass.Teams.Player then
---		return
---	end
+	if self.team ~= SubmarineClass.Teams.Player then
+		return
+	end
 
 	local before_draw_x, before_draw_y = draw_x, draw_y
 	local x_after, y_after, direction_after = self:positionAndDirectionAfterTurn()
@@ -139,7 +141,9 @@ function SubmarineClass:draw(grid, draw_action_markers)
 		sub_alpha = (SubmarineClass.bleep_alpha / 2) + 128 -- not a full bleep
 	end
 
-	if self.team == SubmarineClass.Teams.Player then
+	if not self.in_game then
+		love.graphics.setColor(0, 0, 0, 128)
+	elseif self.team == SubmarineClass.Teams.Player then
 		love.graphics.setColor(0, 128, 0, sub_alpha)
 	else
 		love.graphics.setColor(128, 0, 0, sub_alpha) -- TODO : skip displaying Remote Subs
