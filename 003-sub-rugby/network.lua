@@ -27,8 +27,6 @@ local pong_msg = "PONG" -- LUBE does not send a keep alive from the server to th
 function network:initClient()
 	assert(self.server == nil and self.client == nil)
 
-	self.data_blob = {}
-
 	if use_tcp then
 		self.client = Lube.tcpClient()
 	else
@@ -63,8 +61,6 @@ end
 
 function network:initServer()
 	assert(self.server == nil and self.client == nil)
-
-	self.data_blob = {}
 
 	if use_tcp then
 		self.server = Lube.tcpServer()
@@ -162,6 +158,23 @@ function network:isConnected()
 	end
 
 	return false
+end
+
+function network:sendPacket(p)
+	if not self:isConnected() then
+		print("Error : can't send packet, not connected")
+		return
+	end
+
+	if self.server ~= nil then
+		for client_id,_ in pairs(self.server.clients) do
+			self.server:send(p, client_id)
+		end
+	end
+
+	if self.client ~= nil then
+		self.client:send(p)
+	end
 end
 
 return network

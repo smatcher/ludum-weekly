@@ -1,6 +1,7 @@
 local GameState = require "love-toys.third-party.hump.gamestate" 
 local Timer = require "love-toys.third-party.hump.timer"
 local Vector = require "love-toys.third-party.hump.vector"
+local Binary = require "love-toys.third-party.binary"
 
 local Entities = require "entities"
 local Network = require "network"
@@ -20,9 +21,20 @@ local game = {
 	orders_menu = Entities.OrdersMenuClass(),
 }
 
+function game:enter()
+	Network.callbacks.recv = function(data, client)
+		self.remote_packet = data
+	end
+end
+
+function game:leave()
+	Network.callbacks.recv = nil
+end
+
 function game:init()
 	-- Create subs for both players
 	self.player_subs = {}
+	self.remote_packet = nil
 	self.remote_subs = {}
 	for i = 1,Constants.Game.SubCountPerTeam,1 do
 		self.player_subs[i] = Entities.SubmarineClass()
@@ -97,6 +109,12 @@ function game:update(dt)
 			if s.in_game and not s:ordersGiven() then
 				self.submit_button_visible = false
 			end
+		end
+	elseif self.current_phase == GamePhases.AwaitingOtherPlayer then
+		if self.remote_packet ~= nil then
+			self:decodeRemotePacket()
+			self.remote_packet = nil
+			self:setPhase(GamePhases.Resolution)
 		end
 	end
 end
@@ -183,11 +201,14 @@ function game:setPhase(phase)
 
 	elseif phase == GamePhases.AwaitingOtherPlayer then
 	-- AWAITING OTHER PLAYER PHASE --
-		-- TODO : netcode
+		Network:sendPacket(self:buildTurnInfoPacket())
+
 		self.grid:disableHovering()
-		self.console:print("Awaiting for opponent orders.", Constants.Colors.TextInfo)
 
 		if Network:isConnected() then
+			if self.remote_packet == nil then
+				self.console:print("Awaiting for opponent orders.", Constants.Colors.TextInfo)
+			end
 		else
 			self.console:print("No opponent connected.", Constants.Colors.TextAlert)
 			self:setPhase(GamePhases.Resolution)
@@ -213,8 +234,6 @@ function game:deploySub(cell_x, cell_y)
 	sub.direction = Entities.SubmarineClass.Directions.East -- Player faces East
 	sub.in_game = true
 
-	-- TODO: prepare serialisation data for turn RPC
-
 	-- Check if phase change is needed
 	if #self.submarines_to_deploy > 0 then
 		self.console:print("Submarine deployed ( " .. #self.submarines_to_deploy .. " to go).", Constants.Colors.TextNormal)
@@ -231,6 +250,31 @@ function game:playerSubAtCoord(x, y)
 		end
 	end
 	return nil
+end
+
+function game:buildTurnInfoPacket()
+	local t = {}
+	for i,sub in pairs(self.player_subs) do
+		t["X"  .. i] = sub.x
+		t["Y"  .. i] = sub.y
+		t["IG" .. i] = sub.in_game
+		t["D"  .. i] = sub.direction
+		t["A1" .. i] = sub.action_1
+		t["A2" .. i] = sub.action_2
+	end
+	return Binary:pack(t)
+end
+
+function game:decodeRemotePacket()
+	local t = Binary:unpack(self.remote_packet)
+	for i,sub in pairs(self.remote_subs) do
+		sub.x = Constants.Grid.Width - t["X" .. i] - 1 -- Flip x
+		sub.y = Constants.Grid.Height - t["Y" .. i] - 1 -- Flip y
+		sub.in_game = t["IG" .. i]
+		sub.direction = (t["D" .. i] + 4) % 8 -- Flip 180 degrees
+		sub.action_1 = t["A1" .. i]
+		sub.action_2 = t["A2" .. i]
+	end
 end
 
 return game
