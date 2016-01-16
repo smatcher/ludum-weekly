@@ -274,8 +274,11 @@ end
 
 function game:playerSubAtCoord(x, y)
 	for _,sub in pairs(self.player_subs) do
-		if sub.in_game and sub.x == x and sub.y == y then
-			return sub
+		if sub.in_game then
+			local sx, sy, _ = sub:positionAndDirectionAfterTurn()
+			if x == sx and y == sy then
+				return sub
+			end
 		end
 	end
 	return nil

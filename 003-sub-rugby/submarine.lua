@@ -133,10 +133,16 @@ function SubmarineClass:draw(grid, draw_action_markers)
 	local draw_x, draw_y = grid:cellCoord(x_after, y_after)
 
 	-- Actual submarine drawing
+	local sub_alpha = 255
+
+	if draw_action_markers and not self:ordersGiven() then
+		sub_alpha = (SubmarineClass.bleep_alpha / 2) + 128 -- not a full bleep
+	end
+
 	if self.team == SubmarineClass.Teams.Player then
-		love.graphics.setColor(0, 128, 0, 255)
+		love.graphics.setColor(0, 128, 0, sub_alpha)
 	else
-		love.graphics.setColor(128, 0, 0, 255) -- TODO : skip displaying Remote Subs
+		love.graphics.setColor(128, 0, 0, sub_alpha) -- TODO : skip displaying Remote Subs
 	end
 	love.graphics.draw(
 		SubmarineClass.Sub,
