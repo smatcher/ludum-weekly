@@ -1,4 +1,5 @@
 local Class = require "love-toys.third-party.hump.class"
+local Timer = require "love-toys.third-party.hump.timer"
 
 local SubmarineClass = Class {
 	Teams = {
@@ -41,6 +42,8 @@ local SubmarineClass = Class {
 		-- Other
 		Wait    = 30,
 	},
+
+	bleep_alpha = 255,
 }
 
 local function deltaCellsForDirection(d)
@@ -109,24 +112,57 @@ function SubmarineClass:draw(grid, draw_action_markers)
 		return
 	end
 
+	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
+
+	-- Sonar bleep
+	if self.sonar_bleep then
+		love.graphics.setColor(255,0,0,SubmarineClass.bleep_alpha)
+		love.graphics.draw(
+			SubmarineClass.Bleep,
+			draw_x,
+			draw_y
+		)
+	end
+
+--	if self.team ~= SubmarineClass.Teams.Player then
+--		return
+--	end
+
+	local before_draw_x, before_draw_y = draw_x, draw_y
+	local x_after, y_after, direction_after = self:positionAndDirectionAfterTurn()
+	local draw_x, draw_y = grid:cellCoord(x_after, y_after)
+
+	-- Actual submarine drawing
 	if self.team == SubmarineClass.Teams.Player then
 		love.graphics.setColor(0, 128, 0, 255)
 	else
 		love.graphics.setColor(128, 0, 0, 255) -- TODO : skip displaying Remote Subs
 	end
-
-	-- Actual submarine drawing
-	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
-	love.graphics.rectangle("fill",
-		draw_x + 2,
-		draw_y + 2,
-		20, -- Hardcoded while not definitive draw function
-		20,
-		10
+	love.graphics.draw(
+		SubmarineClass.Sub,
+		draw_x + 12,
+		draw_y + 12,
+		math.pi*(direction_after - 2)/4.0,
+		1, 1, 12, 12
 	)
+
+	if x_after ~= self.x or y_after ~= self.y then
+		love.graphics.setColor(0, 128, 0, 128)
+		love.graphics.draw(
+			SubmarineClass.Sub,
+			before_draw_x + 12,
+			before_draw_y + 12,
+			math.pi*(self.direction - 2)/4.0,
+			1, 1, 12, 12
+		)
+		love.graphics.setColor(128, 255, 128, 255)
+		love.graphics.line(before_draw_x + 12, before_draw_y+ 12, draw_x + 12, draw_y + 12)
+	end
 
 	-- Action taken markers
 	if draw_action_markers then
+		love.graphics.setColor({0,0,0,192})
+		love.graphics.rectangle("fill", draw_x + 11, draw_y + 17, 12, 6)
 		self:drawActionMarker(self.action_1, draw_x + 12, draw_y + 18, false)
 		local override = (self.action_1 == SubmarineClass.Actions.Move_5 
 			or self.action_1 == SubmarineClass.Actions.Move_6)
@@ -144,14 +180,11 @@ function SubmarineClass:draw(grid, draw_action_markers)
 		)
 	end
 
-	love.graphics.setColor(0,0,0,255)
-	local markers = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"}
-	local marker = markers[self.direction+1]
-	love.graphics.print(marker, draw_x + 2, draw_y + 2)
-
-	if self.sonar_bleep then
-		love.graphics.print("b", draw_x + 14, draw_y + 10)
-	end
+--	love.graphics.setColor(0,0,0,255)
+--	local markers = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"}
+--	local marker = markers[self.direction+1]
+--	love.graphics.print(marker, draw_x + 2, draw_y + 2)
+--
 	love.graphics.setColor(Constants.Colors.Default)
 end
 
@@ -168,31 +201,54 @@ function SubmarineClass:resetOrders()
 	self.action_2 = nil
 end
 
-function SubmarineClass:directionAfterAction(a)
-	if a ~= nil and a >= SubmarineClass.Actions.Turn_N and a <= SubmarineClass.Actions.Turn_NW then
+local function modDirection(a, start_direction)
+		if a ~= nil and a >= SubmarineClass.Actions.Turn_N and a <= SubmarineClass.Actions.Turn_NW then
 		return a - SubmarineClass.Actions.Turn_N
 	end
-	return self.direction
+	return start_direction
 end
 
-function SubmarineClass:positionAfterAction(a)
+local function modPosition(a, x, y, direction)
 	if a ~= nil and a >= SubmarineClass.Actions.Move_1 and a <= SubmarineClass.Actions.Move_6 then
 		local length = a + 1
-		local dx, dy = deltaCellsForDirection(self.direction)
-		return self.x + length * dx, self.y + length * dy
+		local dx, dy = deltaCellsForDirection(direction)
+		return x + length * dx, y + length * dy
 	end
-	return self.x, self.y
+	return x, y
+end
+
+function SubmarineClass:positionAndDirectionAfterTurn()
+	local x,y,direction = self.x, self.y, self.direction
+	x, y = modPosition(self.action_1, x, y, direction)
+	direction = modDirection(self.action_1, direction)
+	x, y = modPosition(self.action_2, x, y, direction)
+	direction = modDirection(self.action_2, direction)
+	return x, y, direction
 end
 
 function SubmarineClass:resolveAction(action, torpedoes)
-	self.x, self.y = self:positionAfterAction(action)
-	self.direction = self:directionAfterAction(action)
+	self.x, self.y = modPosition(action, self.x, self.y, self.direction)
+	self.direction = modDirection(action, self.direction)
 
 	-- TODO : spawn torpedo
 
 	if isNonStealthyAction(action) then
 		self.sonar_bleep = true
 	end
+end
+
+function SubmarineClass.loadAssets()
+	SubmarineClass.Sub = love.graphics.newImage("sub.png")
+	SubmarineClass.Bleep = love.graphics.newImage("bleep.png")
+
+	local easeIn, easeOut
+	easeIn = function()
+		Timer.tween(0.5, SubmarineClass, {bleep_alpha = 255}, 'in-out-quad', easeOut)
+	end
+	easeOut = function()
+		Timer.tween(0.5, SubmarineClass, {bleep_alpha = 0}, 'in-out-quad', easeIn)
+	end
+	easeOut()
 end
 
 return SubmarineClass

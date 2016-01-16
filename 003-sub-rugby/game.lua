@@ -104,6 +104,7 @@ end
 
 function game:update(dt)
 	Network:update(dt)
+	Timer.update(dt)
 
 	self.submit_button_visible = false
 	if self.current_phase == GamePhases.Orders then
@@ -228,6 +229,7 @@ function game:setPhase(phase)
 		self:resolveAction(2)
 		-- TODO : also wait or something
 		for _,sub in pairs(self.player_subs) do sub:resetOrders() end
+		for _,sub in pairs(self.remote_subs) do sub:resetOrders() end
 		self:setPhase(GamePhases.Deployment)
 
 	elseif phase == GamePhases.GameOver then
