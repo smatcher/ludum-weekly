@@ -148,5 +148,21 @@ function network:abort()
 	self.pong_timer = -1
 end
 
+function network:isConnected()
+	if self.server ~= nil then
+		local client_count = 0
+		for _ in pairs(self.server.clients) do
+			client_count = client_count + 1
+		end
+		return client_count > 0
+	end
+
+	if self.client ~= nil then
+		return self.client.connected
+	end
+
+	return false
+end
+
 return network
 

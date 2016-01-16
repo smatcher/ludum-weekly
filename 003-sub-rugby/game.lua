@@ -184,7 +184,14 @@ function game:setPhase(phase)
 	elseif phase == GamePhases.AwaitingOtherPlayer then
 	-- AWAITING OTHER PLAYER PHASE --
 		-- TODO : netcode
+		self.grid:disableHovering()
 		self.console:print("Awaiting for opponent orders.", Constants.Colors.TextInfo)
+
+		if Network:isConnected() then
+		else
+			self.console:print("No opponent connected.", Constants.Colors.TextAlert)
+			self:setPhase(GamePhases.Resolution)
+		end
 
 	elseif phase == GamePhases.Resolution then
 	-- TURN RESOLUTION PHASE --

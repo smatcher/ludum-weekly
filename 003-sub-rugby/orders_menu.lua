@@ -233,6 +233,10 @@ function OrdersMenuClass:updateAvailableOrders()
 
 	-- Move orders
 	for _,o in pairs(self.move_orders) do o.enabled = can_move end
+	if has_action1 then
+		self.move_orders[5].enabled = false
+		self.move_orders[6].enabled = false
+	end
 	-- Turn orders
 	for _,o in pairs(self.turn_orders) do o.enabled = can_turn end
 	if can_turn then
