@@ -44,6 +44,7 @@ function game:init()
 	end
 	-- Create bomb
 	self.bomb = Entities.BombClass()
+	self.orders_menu.bomb = self.bomb
 
 	-- Create torpedoes
 	self.torpedoes = {}
@@ -55,6 +56,7 @@ function game:init()
 	-- Misc
 	self.submit_button_visible = false
 	self.submit_button_hovered = false
+	self.victorious_team = nil
 
 	-- Start the game
 	self:setPhase(GamePhases.Deployment)
@@ -67,15 +69,20 @@ function game:draw()
 	self.grid:draw()
 	-- Units
 	local draw_action_markers = self.current_phase == GamePhases.Orders
+	if not self.bomb:drawOverSubs() then
+		self.bomb:draw(self.grid)
+	end
 	for _,sub in pairs(self.player_subs) do
 		sub:draw(self.grid, draw_action_markers)
 	end
 	for _,sub in pairs(self.remote_subs) do
 		sub:draw(self.grid, false)
 	end
-	self.bomb:draw(self.grid)
 	for _,torpedo in pairs(self.torpedoes) do
 		torpedo:draw(self.grid)
+	end
+	if self.bomb:drawOverSubs() then
+		self.bomb:draw(self.grid)
 	end
 	-- Console
 	self.console:draw()
@@ -227,6 +234,7 @@ function game:setPhase(phase)
 		-- TODO : play a resolve animation
 		-- Reset bleep
 		for _,sub in pairs(self.player_subs) do sub.sonar_bleep = false end
+		for _,sub in pairs(self.remote_subs) do sub.sonar_bleep = false end
 		-- Resolve actions
 		self:resolveAction(1)
 		self:resolveAction(2)
@@ -238,10 +246,24 @@ function game:setPhase(phase)
 			end
 		end
 		for _,sub in pairs(self.remote_subs) do sub:resetOrders() end
-		self:setPhase(GamePhases.Deployment)
+
+		if self.victorious_team ~= nil then
+			self:setPhase(GamePhases.GameOver)
+		else
+			self:setPhase(GamePhases.Deployment)
+		end
 
 	elseif phase == GamePhases.GameOver then
 	-- GAME OVER PHASE --
+		if self.victorious_team == Entities.SubmarineClass.Teams.Player then
+			self.console:print("", Constants.Colors.TextInfo)
+			self.console:print(" --- You win --- ", Constants.Colors.TextInfo)
+			self.console:print("", Constants.Colors.TextInfo)
+		else
+			self.console:print("", Constants.Colors.TextAlert)
+			self.console:print(" --- You lose --- ", Constants.Colors.TextAlert)
+			self.console:print("", Constants.Colors.TextAlert)
+		end
 	end
 end
 
@@ -252,7 +274,14 @@ function game:resolveAction(suffix)
 
 	-- Move and rotate subs
 	for _,sub in pairs(all_subs) do
-		sub:resolveAction(sub["action_" .. suffix], self.torpedoes, Entities.TorpedoClass)
+		sub:resolveAction(sub["action_" .. suffix], self.torpedoes, Entities.TorpedoClass, self.bomb)
+	end
+
+	-- Move bomb
+	if self.bomb.sub_grabbing ~= nil then
+		local s = self.bomb.sub_grabbing
+		self.bomb.x = s.x
+		self.bomb.y = s.y
 	end
 
 	local destroyed_subs = {}
@@ -261,10 +290,7 @@ function game:resolveAction(suffix)
 		local torpedo = self.torpedoes[i]
 		torpedo:move(all_subs, destroyed_subs)
 		
-		if torpedo.x < 0
-		or torpedo.y < 0
-		or torpedo.x >= Constants.Grid.Width
-		or torpedo.y >= Constants.Grid.Height then
+		if torpedo.destroyed then
 			table.remove(self.torpedoes, i)
 		end
 	end
@@ -297,6 +323,17 @@ function game:resolveAction(suffix)
 			end
 			s.in_game = false
 			s.respawn_cooldown = Constants.Game.RespawnCooldown + 1
+			if self.bomb.sub_grabbing == s then
+				self.bomb.sub_grabbing = nil
+			end
+	end
+
+	-- check victory condition
+	local bx, by = self.bomb.x, self.bomb.y
+	if self.grid:isPlayerTeamArea(bx, by) then
+		self.victorious_team = Entities.SubmarineClass.Teams.Remote
+	elseif self.grid:isRemoteTeamArea(bx, by) then
+		self.victorious_team = Entities.SubmarineClass.Teams.Player
 	end
 
 end

@@ -8,6 +8,7 @@ function TorpedoClass:init(x, y, direction)
 	self.x = x
 	self.y = y
 	self.direction = direction
+	self.destroyed = false
 end
 
 function TorpedoClass:move(all_subs, subs_destroyed)
@@ -18,8 +19,17 @@ function TorpedoClass:move(all_subs, subs_destroyed)
 		for _,sub in pairs(all_subs) do
 			if sub.x == self.x and sub.y == self.y then
 				subs_destroyed[sub] = true
+				self.destroyed = true
+				return
 			end
 		end
+	end
+
+	if self.x < 0
+	or self.y < 0
+	or self.x >= Constants.Grid.Width
+	or self.y >= Constants.Grid.Height then
+		self.destroyed = true
 	end
 end
 

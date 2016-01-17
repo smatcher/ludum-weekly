@@ -239,12 +239,15 @@ function SubmarineClass:positionAndDirectionAfterTurn()
 	return x, y, direction
 end
 
-function SubmarineClass:resolveAction(action, torpedoes, TorpedoClass)
+function SubmarineClass:resolveAction(action, torpedoes, TorpedoClass, bomb)
 	self.x, self.y = modPosition(action, self.x, self.y, self.direction)
 	self.direction = modDirection(action, self.direction)
 
 	if action == SubmarineClass.Actions.Fire then
 		table.insert(torpedoes, TorpedoClass(self.x, self.y, self.direction))
+	end
+	if action == SubmarineClass.Actions.Grab then
+		bomb.sub_grabbing = self
 	end
 
 	if isNonStealthyAction(action) then

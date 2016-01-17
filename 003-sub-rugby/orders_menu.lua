@@ -12,6 +12,7 @@ local OrderButton = Class {
 		self.enabled = true
 		self.width = width
 		self.info = info
+		self.bomb = nil
 
 		if not_stealthy == true then
 			self.warn = true
@@ -280,12 +281,11 @@ function OrdersMenuClass:updateAvailableOrders()
 	end
 	-- Interact orders
 	for _,o in pairs(self.interact_orders) do o.enabled = can_interact end
+	-- Grab bomb if we are over it
+	local sub_is_over_bomb = self.selected_sub.x == self.bomb.x and self.selected_sub.y == self.bomb.y
+	self.interact_orders[2].enabled = sub_is_over_bomb and can_interact
 	-- Other orders
 	for _,o in pairs(self.other_orders) do o.enabled = can_other end
-
-	-- Disabled for now
-	self.interact_orders[2].enabled = false
-	--self.interact_orders[3].enabled = false
 
 	-- Always enabled
 	self.other_orders[2].enabled = true
