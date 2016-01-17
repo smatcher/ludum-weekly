@@ -24,9 +24,9 @@ function TorpedoClass:move(all_subs, subs_destroyed)
 end
 
 function TorpedoClass:draw(grid)
-	return -- don't draw torpedoes
-	local draw_x, draw_y = grid:cellCoord(self.x, self.y)
-	love.graphics.print("T", draw_x, draw_y)
+	-- don't draw torpedoes
+	--local draw_x, draw_y = grid:cellCoord(self.x, self.y)
+	--love.graphics.print("T", draw_x, draw_y)
 end
 
 return TorpedoClass
