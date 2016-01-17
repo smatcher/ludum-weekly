@@ -4,6 +4,7 @@ local Entities = {
 	TooltipsClass = require "tooltips",
 	BombClass = require "bomb",
 	SubmarineClass = require "submarine",
+	TorpedoClass = require "torpedo",
 	ConsoleClass = require "console",
 	OrdersMenuClass = require "orders_menu",
 }

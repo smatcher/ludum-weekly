@@ -44,9 +44,11 @@ local SubmarineClass = Class {
 	},
 
 	bleep_alpha = 255,
+
+	deltaCellsForDirection = nil,
 }
 
-local function deltaCellsForDirection(d)
+SubmarineClass.deltaCellsForDirection = function(d)
 	local ds = SubmarineClass.Directions
 	if d == ds.North then
 		return 0,-1
@@ -222,7 +224,7 @@ end
 local function modPosition(a, x, y, direction)
 	if a ~= nil and a >= SubmarineClass.Actions.Move_1 and a <= SubmarineClass.Actions.Move_6 then
 		local length = a + 1
-		local dx, dy = deltaCellsForDirection(direction)
+		local dx, dy = SubmarineClass.deltaCellsForDirection(direction)
 		return x + length * dx, y + length * dy
 	end
 	return x, y
@@ -237,11 +239,13 @@ function SubmarineClass:positionAndDirectionAfterTurn()
 	return x, y, direction
 end
 
-function SubmarineClass:resolveAction(action, torpedoes)
+function SubmarineClass:resolveAction(action, torpedoes, TorpedoClass)
 	self.x, self.y = modPosition(action, self.x, self.y, self.direction)
 	self.direction = modDirection(action, self.direction)
 
-	-- TODO : spawn torpedo
+	if action == SubmarineClass.Actions.Fire then
+		table.insert(torpedoes, TorpedoClass(self.x, self.y, self.direction))
+	end
 
 	if isNonStealthyAction(action) then
 		self.sonar_bleep = true

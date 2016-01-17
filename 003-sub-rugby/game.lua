@@ -74,6 +74,9 @@ function game:draw()
 		sub:draw(self.grid, false)
 	end
 	self.bomb:draw(self.grid)
+	for _,torpedo in pairs(self.torpedoes) do
+		torpedo:draw(self.grid)
+	end
 	-- Console
 	self.console:draw()
 	-- Orders menu
@@ -249,23 +252,40 @@ function game:resolveAction(suffix)
 
 	-- Move and rotate subs
 	for _,sub in pairs(all_subs) do
-		sub:resolveAction(sub["action_" .. suffix], self.torpedoes)
+		sub:resolveAction(sub["action_" .. suffix], self.torpedoes, Entities.TorpedoClass)
 	end
 
 	local destroyed_subs = {}
 	-- Move torpedoes
+	for i=#self.torpedoes,1,-1 do
+		local torpedo = self.torpedoes[i]
+		torpedo:move(all_subs, destroyed_subs)
+		
+		if torpedo.x < 0
+		or torpedo.y < 0
+		or torpedo.x >= Constants.Grid.Width
+		or torpedo.y >= Constants.Grid.Height then
+			table.remove(self.torpedoes, i)
+		end
+	end
 
-	-- check destroyed subs
+	-- check collisions and game boundaries
 	for _,sub in pairs(all_subs) do
+		-- boundaries
+		if sub.x < 0
+		or sub.y < 0
+		or sub.x >= Constants.Grid.Width
+		or sub.y >= Constants.Grid.Height then
+			destroyed_subs[sub] = true
+		end
+		-- collisions
 		for _,sub2 in pairs(all_subs) do
 			if sub ~= sub2 and sub.x == sub2.x and sub.y == sub2.y then
-				-- collision
 				destroyed_subs[sub] = true
 				destroyed_subs[sub2] = true
 			end
 		end
 	end
-		
 	
 	-- do destruction
 	for s,_ in pairs(destroyed_subs) do
