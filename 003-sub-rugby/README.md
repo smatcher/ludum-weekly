@@ -20,3 +20,5 @@ Conclusion:
 - lack of after-action replay
 - the submarines are too fast
 - no undo on deployment
+- no way to restart a match (also the game does not reset on Game State enter)
+- reconnection bug on the client side (disconnect, try to reconnect and the game will assume it's already connected and jump right into the game)

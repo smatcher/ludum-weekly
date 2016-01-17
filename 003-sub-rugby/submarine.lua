@@ -43,8 +43,6 @@ local SubmarineClass = Class {
 		Wait    = 30,
 	},
 
-	bleep_alpha = 255,
-
 	deltaCellsForDirection = nil,
 }
 
@@ -120,7 +118,7 @@ function SubmarineClass:draw(grid, draw_action_markers)
 
 	-- Sonar bleep
 	if self.sonar_bleep then
-		love.graphics.setColor(255,0,0,SubmarineClass.bleep_alpha)
+		love.graphics.setColor(255,0,0,255 * global_blinker)
 		love.graphics.draw(
 			SubmarineClass.Bleep,
 			draw_x,
@@ -141,7 +139,7 @@ function SubmarineClass:draw(grid, draw_action_markers)
 	local sub_alpha = 255
 
 	if draw_action_markers and not self:ordersGiven() then
-		sub_alpha = (SubmarineClass.bleep_alpha / 2) + 128 -- not a full bleep
+		sub_alpha = 128 * global_blinker + 128 -- not a full bleep
 	end
 
 	if not self.in_game then
@@ -258,15 +256,6 @@ end
 function SubmarineClass.loadAssets()
 	SubmarineClass.Sub = love.graphics.newImage("sub.png")
 	SubmarineClass.Bleep = love.graphics.newImage("bleep.png")
-
-	local easeIn, easeOut
-	easeIn = function()
-		Timer.tween(0.5, SubmarineClass, {bleep_alpha = 255}, 'in-out-quad', easeOut)
-	end
-	easeOut = function()
-		Timer.tween(0.5, SubmarineClass, {bleep_alpha = 0}, 'in-out-quad', easeIn)
-	end
-	easeOut()
 end
 
 return SubmarineClass

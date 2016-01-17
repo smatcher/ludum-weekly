@@ -12,7 +12,7 @@ function GridClass:init()
 	self.hovering_enabled = false
 	self.hovering_condition_hook = nil
 	self.hovered_cell = nil
-	self.flashing_tile_color = {192, 192, 192, 192} -- TODO: flash with a timer
+	self.flashing_tile_color = {192, 192, 192, 192}
 end
 
 function GridClass:enableHovering(condition_hook)
@@ -77,6 +77,7 @@ function GridClass:draw()
 
 	-- Hovered cell
 	if self.hovered_cell ~= nil then
+		self.flashing_tile_color[4] = 192 * global_blinker
 		love.graphics.setColor(self.flashing_tile_color)
 		love.graphics.rectangle("fill", 
 			Constants.Grid.DrawX + self.hovered_cell[1] * CellWidth,

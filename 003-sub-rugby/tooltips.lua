@@ -54,6 +54,7 @@ end
 function TooltipsClass:draw()
 	
 	if self.new == true then
+		Constants.Colors.TooltipNew[4] = 128 + 128 * global_blinker -- not so constant afterall
 		love.graphics.setColor(Constants.Colors.TooltipNew)
 	elseif self.hovered == false then
 		love.graphics.setColor(Constants.Colors.TooltipDim)
