@@ -24,7 +24,7 @@ local handshake_msg = "HAKA"
 local ping_msg = "PING"
 local pong_msg = "PONG" -- LUBE does not send a keep alive from the server to the client we do it ourselves
 
-function network:initClient()
+function network:initClient(ip, port)
 	assert(self.server == nil and self.client == nil)
 
 	if use_tcp then
@@ -46,7 +46,7 @@ function network:initClient()
 	end
 	self.client.handshake = handshake_msg
 	self.client:setPing(true, ping_rate, ping_msg)
-	local ok, err = self.client:connect("127.0.0.1", 42003)
+	local ok, err = self.client:connect(ip, port)
 	if ok then
 		self.pong_timer = 0
 
@@ -59,7 +59,7 @@ function network:initClient()
 	print("connection", ok, err)
 end
 
-function network:initServer()
+function network:initServer(port)
 	assert(self.server == nil and self.client == nil)
 
 	if use_tcp then
@@ -93,7 +93,7 @@ function network:initServer()
 
 	self.server.handshake = handshake_msg
 	self.server:setPing(true, timeout_limit, ping_msg)
-	self.server:listen(42003)
+	self.server:listen(port)
 	print("server started")
 end
 
