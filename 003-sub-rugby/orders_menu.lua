@@ -282,7 +282,8 @@ function OrdersMenuClass:updateAvailableOrders()
 	-- Interact orders
 	for _,o in pairs(self.interact_orders) do o.enabled = can_interact end
 	-- Grab bomb if we are over it
-	local sub_is_over_bomb = self.selected_sub.x == self.bomb.x and self.selected_sub.y == self.bomb.y
+	local sub_x, sub_y, _ = self.selected_sub:positionAndDirectionAfterTurn()
+	local sub_is_over_bomb = sub_x == self.bomb.x and sub_y == self.bomb.y
 	self.interact_orders[2].enabled = sub_is_over_bomb and can_interact
 	-- Other orders
 	for _,o in pairs(self.other_orders) do o.enabled = can_other end
