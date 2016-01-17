@@ -2,6 +2,50 @@ local Class = require "love-toys.third-party.hump.class"
 
 local TooltipsClass = Class {}
 
+local tooltip_text = [[
+==[ Rules for SubRugby ]==
+You play rugby with a team of submarines.
+Take the bomb to the enemy lines (red area).
+
+= Game principle:
+The game is turn based, the turns are simultaneous.
+A turn is divided in 3 phases:
+- Deployment
+- Orders
+- Resolution
+
+The game relies on stealth, you do not see the other player units.
+However some actions will trigger a sonar bleep on the other player's screen.
+
+= Deployment:
+On your first turn (and afterward if you loose units)
+you start your turn by deploying new submarines.
+You do so by clicking on a cell in your area (green).
+Dead units take 3 turns to respawn.
+
+= Orders:
+Select your units by clicking on them.
+Your units have 2 actions for the turn (some actions take both).
+A unit may only do one action per category per turn.
+Orange actions will cause a sonar bleep.
+When all your units are given their orders the "Send orders" button will appear.
+
+= Resolution:
+When both players validated their orders the turn resolution begins.
+Both actions are solved one after the other
+(first action for all units then second for all units)
+Actions for a given sequence are solved in this order:
+- units move
+- torpedoes are fired
+- torpedoes move
+- destroyed units are removed
+
+Units are destroyed on the following conditions:
+- hit by a torpedo
+- occupies the same cell as an other unit (collision)
+- leaves the playing field
+]]
+
 function TooltipsClass:init()
 	self.hovered = false
 	self.new = true
@@ -32,7 +76,7 @@ function TooltipsClass:draw()
 			Constants.Tooltips.DrawInfoHeight
 		)
 		love.graphics.setColor(Constants.Colors.TextNormal)
-		love.graphics.print("Work in progress : Tooltips aren't functional yet",
+		love.graphics.print(tooltip_text,
 			Constants.Tooltips.DrawInfoX + Constants.Tooltips.TextOffsetX,
 			Constants.Tooltips.DrawInfoY + Constants.Tooltips.TextOffsetY
 		)

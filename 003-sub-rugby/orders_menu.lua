@@ -97,7 +97,7 @@ function OrdersMenuClass:init()
 	}
 
 	self.interact_orders = {
-		OrderButton(A.Fire,    "Fire*"  , "Fire a torpedo *NON STEALTHY*", 60, true),
+		OrderButton(A.Fire,    "Fire*"  , "Fire a torpedo (moves 6 cells per action) *NON STEALTHY*", 60, true),
 		--OrderButton(A.Special, "Special", "NOT IMPLEMENTED", 60),
 		OrderButton(A.Grab,    "Grab"   , "Grab the bomb", 60),
 	}

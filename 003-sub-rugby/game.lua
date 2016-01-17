@@ -1,7 +1,7 @@
 local GameState = require "love-toys.third-party.hump.gamestate" 
 local Timer = require "love-toys.third-party.hump.timer"
 local Vector = require "love-toys.third-party.hump.vector"
-local Binary = require "love-toys.third-party.binary"
+local Binary = require "love-toys.third-party.Binary"
 
 local Entities = require "entities"
 local Network = require "network"

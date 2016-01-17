@@ -30,11 +30,11 @@ Constants = {
 	Tooltips = {
 		DrawX = (800 - 32 - 4),
 		DrawY = 4,
-		DrawInfoX = 500,
+		DrawInfoX = 270,
 		DrawInfoY = 0,
-		DrawInfoWidth = 300,
+		DrawInfoWidth = 530,
 		DrawInfoHeight = 600,
-		TextOffsetX = 5,
+		TextOffsetX = 15,
 		TextOffsetY = 5,
 	},
 
@@ -77,7 +77,7 @@ Constants = {
 		Background = {105, 140, 160, 255},
 		ConsoleBackground = {27, 33, 37, 255},
 		OrdersMenuBackground = {27, 33, 37, 255},
-		TooltipBackground = {10, 10, 10, 230},
+		TooltipBackground = {10, 10, 10, 240},
 		Submit = {46, 75, 67, 255},
 		SubmitHovered = {59, 145, 83, 255},
 		TeamRedArea = {160, 105, 140, 255},
